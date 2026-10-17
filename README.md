@@ -17,7 +17,7 @@ Reworks the Leadership skill **Support Doctrine** into **AI Support Doctrine** (
 An AI core supporting a crewed ship is called a **Gamma Assist**. With the default settings:
 - **Name and portrait:** every supporting core is named "Gamma Assist - by Tri-Tachyon", whatever its grade, and shows its own core icon as its portrait.
 - **Personality:** it follows your fleet doctrine's aggression setting, which is shown in the picker and tooltips. At aggression 4, like vanilla's ships without officers, it rolls aggressive or reckless at the start of each battle; out of combat it shows as aggressive.
-- **Skills:** it only gets the regular (non-elite) versions of its skills, including skills picked with "Change skills". *(Setting.)*
+- **Skills:** it only gets the regular (non-elite) versions of its skills. *(Setting.)*
 - **No capstones:** it can't take Systems Expertise or Missile Specialization. They're hidden in "Change skills", leaving a gap, and removed from existing cores, leaving a free slot. *(Setting.)*
 - **No integration:** the "Fully integrate" button is hidden. If an integration still happens, it's undone and the story point refunded.
 - **Not an officer:** a ship supported by an Assist counts as having no officer for the skills Carrier Group, Fighter Uplink, Coordinated Maneuvers and Wolfpack Tactics, and for battle difficulty (the post-battle XP multiplier). *(Setting.)*
