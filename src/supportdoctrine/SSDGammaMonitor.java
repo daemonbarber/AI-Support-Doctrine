@@ -10,9 +10,9 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.util.Misc;
 
 /**
- * Runs every frame (including while the core UI is open):
- * - while the core UI is open, adds Gamma core entries to the captain picker;
- * - refunds Gamma cores that vanilla code overwrote without returning;
+ * Only does work while the core UI is open (runs while paused):
+ * - adds Gamma core entries to the captain picker and keeps "Change skills" non-elite;
+ * - finishes swaps / refunds Gamma cores that vanilla's picker only half-handles;
  * - once the core UI closes, enforces the rules (Gamma only, no integration, skill required).
  */
 public class SSDGammaMonitor implements EveryFrameScript {
@@ -31,16 +31,18 @@ public class SSDGammaMonitor implements EveryFrameScript {
         CampaignUIAPI ui = Global.getSector().getCampaignUI();
         CoreUITabId tab = ui == null ? null : ui.getCurrentCoreTab();
 
-        // The captain picker can be opened from the Fleet and Refit tabs, so look for it on any tab.
+        // Captains can only be changed through the core UI, so outside it there's nothing to do.
         if (tab != null) {
+            // Fresh baseline when the UI opens; captains may have changed since it was last open.
+            if (!wasInCoreUI) GammaSupport.snapshotCaptains();
+            // The captain picker can be opened from the Fleet and Refit tabs, so look for it on any tab.
             PickerInjector.advance();
-        }
-
-        GammaSupport.reconcileCaptainChanges();
-        if (tab == null && wasInCoreUI) {
+            GammaSupport.reconcileCaptainChanges();
+            GammaSupport.removeEliteSkillsFromCrewedGammas();
+            GammaSupport.snapshotCaptains();
+        } else if (wasInCoreUI) {
             enforce();
         }
-        GammaSupport.snapshotCaptains();
         wasInCoreUI = tab != null;
     }
 
@@ -66,6 +68,7 @@ public class SSDGammaMonitor implements EveryFrameScript {
                 message(member.getShipName() + ": Gamma cores on crewed ships can't be integrated - story point refunded");
             }
         }
+        GammaSupport.removeEliteSkillsFromCrewedGammas();
         GammaSupport.snapshotCaptains();
     }
 

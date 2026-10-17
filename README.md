@@ -12,6 +12,7 @@ Rules:
   - Click the ship's current core to unassign it.
   - Click a core on another ship to move it.
 - Swaps behave like vanilla officer swaps. Gamma cores can be swapped with officers or with you, in either direction. You can never end up without a ship.
+- Gamma cores on crewed ships get the regular (non-elite) versions of their skills, including skills picked with "Change skills". Known cosmetic issue: a newly picked skill flashes as elite for one frame.
 - Gamma cores on crewed ships can't be integrated. The button is hidden; if an integration still happens, it is undone and the story point is refunded.
 - Replacing a Gamma core with an unassigned officer refunds the core. Selling, storing or scuttling the ship returns it through vanilla.
 - If you respec out of the skill, assigned Gamma cores go back to your cargo.

@@ -58,23 +58,40 @@ final class Reflect {
         }
     }
 
-    private static final Map<String, Object> METHOD_CACHE = new HashMap<>();
+    /** Cached "nothing found" marker, so failed lookups aren't repeated. */
+    private static final Object NONE = new Object();
+    private static final int MAX_CACHED_PARAMS = 8;
+
+    /** class -> method name -> Method (or NONE), indexed by parameter count. */
+    private static final Map<Class<?>, Map<String, Object[]>> METHOD_CACHE = new HashMap<>();
+    /** class -> field type name -> accessible Field (or NONE). */
+    private static final Map<Class<?>, Map<String, Object>> FIELD_CACHE = new HashMap<>();
 
     private Reflect() {
     }
 
     /** Value of the first declared field (on the class or a superclass) whose type has the given name. */
     static Object getFieldOfType(Object target, String typeName) throws Throwable {
-        for (Class<?> c = target.getClass(); c != null; c = c.getSuperclass()) {
+        Map<String, Object> byType = FIELD_CACHE.computeIfAbsent(target.getClass(), c -> new HashMap<>());
+        Object field = byType.get(typeName);
+        if (field == null) {
+            field = findFieldOfType(target.getClass(), typeName);
+            byType.put(typeName, field);
+        }
+        return field == NONE ? null : FIELD_GET.invoke(field, target);
+    }
+
+    private static Object findFieldOfType(Class<?> cls, String typeName) throws Throwable {
+        for (Class<?> c = cls; c != null; c = c.getSuperclass()) {
             for (Object field : (Object[]) GET_DECLARED_FIELDS.invoke(c)) {
                 Class<?> type = (Class<?>) FIELD_GET_TYPE.invoke(field);
                 if (type.getName().equals(typeName)) {
                     FIELD_SET_ACCESSIBLE.invoke(field, true);
-                    return FIELD_GET.invoke(field, target);
+                    return field;
                 }
             }
         }
-        return null;
+        return NONE;
     }
 
     static boolean hasMethod(Object target, String name, int paramCount) throws Throwable {
@@ -91,18 +108,26 @@ final class Reflect {
     }
 
     private static Object findMethod(Class<?> cls, String name, int paramCount) throws Throwable {
-        String key = cls.getName() + "#" + name + "/" + paramCount;
-        if (METHOD_CACHE.containsKey(key)) return METHOD_CACHE.get(key);
-        Object found = null;
+        if (paramCount >= MAX_CACHED_PARAMS) return searchMethod(cls, name, paramCount);
+        Object[] byCount = METHOD_CACHE.computeIfAbsent(cls, c -> new HashMap<>())
+                .computeIfAbsent(name, n -> new Object[MAX_CACHED_PARAMS]);
+        Object method = byCount[paramCount];
+        if (method == null) {
+            Object found = searchMethod(cls, name, paramCount);
+            method = found == null ? NONE : found;
+            byCount[paramCount] = method;
+        }
+        return method == NONE ? null : method;
+    }
+
+    private static Object searchMethod(Class<?> cls, String name, int paramCount) throws Throwable {
         for (Object method : (Object[]) GET_METHODS.invoke(cls)) {
             if (name.equals(METHOD_GET_NAME.invoke(method))
                     && (int) METHOD_GET_PARAM_COUNT.invoke(method) == paramCount) {
-                found = method;
-                break;
+                return method;
             }
         }
-        METHOD_CACHE.put(key, found);
-        return found;
+        return null;
     }
 
     /** Finds a public constructor whose parameter type names match exactly (primitive names like "boolean"). */

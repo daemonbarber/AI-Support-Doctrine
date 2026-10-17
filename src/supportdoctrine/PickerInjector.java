@@ -7,10 +7,10 @@ import java.util.Set;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.FleetDataAPI;
+import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Commodities;
-import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.ui.ButtonAPI;
 import com.fs.starfarer.api.util.Misc;
 
@@ -32,6 +32,7 @@ final class PickerInjector {
     private static final String MEMBER_CLASS = "com.fs.starfarer.campaign.fleet.FleetMember";
     private static final String OFFICER_DATA_CLASS = "com.fs.starfarer.rpg.OfficerData";
     private static final String PERSON_CLASS = "com.fs.starfarer.rpg.Person";
+    private static final String CHARACTER_STATS_CLASS = "com.fs.starfarer.campaign.CharacterStats";
     private static final String INTEGRATE_TEXT = "Fully integrate";
 
     private static boolean disabled = false;
@@ -41,28 +42,62 @@ final class PickerInjector {
     private PickerInjector() {
     }
 
-    /** Called every frame while the Fleet tab is open. */
+    /** Called every frame while the core UI is open. */
     static void advance() {
         if (disabled) return;
         try {
             Object screen = Reflect.call(Global.getSector().getCampaignUI(), "getScreenPanel");
             if (screen == null) return;
-            Object picker = findPicker(screen, 0);
-            if (picker != null) handlePicker(picker);
+            Object[] found = new Object[2]; // [captain picker, AI core "Change skills" dialog]
+            findDialogs(screen, 0, found);
+            if (found[0] != null) handlePicker(found[0]);
+            if (found[1] != null) handleSkillDialog(found[1]);
         } catch (Throwable t) {
             disabled = true;
             GammaSupport.LOG.warn("SSD: captain picker integration failed; Gamma cores won't be offered this session", t);
         }
     }
 
-    private static Object findPicker(Object component, int depth) throws Throwable {
-        if (component.getClass().getName().equals(PICKER_CLASS)) return component;
-        if (depth > 20 || !Reflect.hasMethod(component, "getChildrenCopy", 0)) return null;
-        for (Object child : (List<?>) Reflect.call(component, "getChildrenCopy")) {
-            Object found = findPicker(child, depth + 1);
-            if (found != null) return found;
+    private static void findDialogs(Object component, int depth, Object[] found) throws Throwable {
+        if (component.getClass().getName().equals(PICKER_CLASS)) {
+            found[0] = component;
+        } else if (isSkillDialog(component)) {
+            found[1] = component;
         }
-        return null;
+        if (depth > 20 || !Reflect.hasMethod(component, "getChildrenCopy", 0)) return;
+        for (Object child : (List<?>) Reflect.call(component, "getChildrenCopy")) {
+            findDialogs(child, depth + 1, found);
+        }
+    }
+
+    /** The obfuscated dialog opened by an AI core's "Change skills" button. */
+    private static boolean isSkillDialog(Object component) throws Throwable {
+        return Reflect.hasMethod(component, "getNumSkills", 0)
+                && Reflect.hasMethod(component, "updateSkillsLabel", 0)
+                && Reflect.hasMethod(component, "createSkillPointsLabel", 1);
+    }
+
+    /**
+     * The "Change skills" dialog edits a working copy of the core's stats, and clicking a skill
+     * always sets it to level 2 (elite). For Gamma cores on crewed ships, keep the working copy at
+     * level 1 so the dialog shows, and confirming applies, the regular versions.
+     */
+    private static void handleSkillDialog(Object dialog) throws Throwable {
+        PersonAPI person = (PersonAPI) Reflect.getFieldOfType(dialog, PERSON_CLASS);
+        if (!GammaSupport.isCrewedGamma(person)) return;
+        // Known cosmetic issue: this runs a frame after a click is drawn, so a newly picked skill
+        // shows as elite for one frame before dropping to regular.
+        clampSkillDialog(dialog);
+    }
+
+    private static void clampSkillDialog(Object dialog) throws Throwable {
+        MutableCharacterStatsAPI workingCopy =
+                (MutableCharacterStatsAPI) Reflect.getFieldOfType(dialog, CHARACTER_STATS_CLASS);
+        if (workingCopy == null) return;
+        for (MutableCharacterStatsAPI.SkillLevelAPI skill : workingCopy.getSkillsCopy()) {
+            if (skill.getSkill().isAptitudeEffect() || skill.getLevel() <= 1f) continue;
+            workingCopy.setSkillLevel(skill.getSkill().getId(), 1f);
+        }
     }
 
     private static void handlePicker(Object picker) throws Throwable {
@@ -114,9 +149,8 @@ final class PickerInjector {
             gammaEntries.add(addEntry(picker, member, list, count++, captain));
         }
         if (allowCargoCore && !cargoEntryListed && hasGammaInCargo()) {
-            PersonAPI fresh = Misc.getAICoreOfficerPlugin(Commodities.GAMMA_CORE)
-                    .createPerson(Commodities.GAMMA_CORE, Factions.PLAYER, null);
-            gammaEntries.add(addEntry(picker, member, list, count, fresh));
+            // Built without elite skills so the picker previews what the ship will actually get.
+            gammaEntries.add(addEntry(picker, member, list, count, GammaSupport.createCrewedGamma()));
         }
 
         for (Object entry : gammaEntries) {

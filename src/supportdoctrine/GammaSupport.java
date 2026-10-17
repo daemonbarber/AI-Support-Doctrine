@@ -1,14 +1,17 @@
 package supportdoctrine;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
 import com.fs.starfarer.api.campaign.FleetDataAPI;
+import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
@@ -85,11 +88,58 @@ public final class GammaSupport {
         }
     }
 
+    /** Gamma core persons created by this mod for crewed ships' pickers (not yet assigned). */
+    private static final Set<PersonAPI> createdForCrewedShips =
+            Collections.newSetFromMap(new WeakHashMap<PersonAPI, Boolean>());
+
+    /** A new Gamma core person, as it should look on a crewed ship (no elite skills). */
+    public static PersonAPI createCrewedGamma() {
+        PersonAPI gamma = Misc.getAICoreOfficerPlugin(Commodities.GAMMA_CORE)
+                .createPerson(Commodities.GAMMA_CORE, Factions.PLAYER, null);
+        removeEliteSkills(gamma);
+        createdForCrewedShips.add(gamma);
+        return gamma;
+    }
+
+    /** Whether this person is a Gamma core serving (or offered to) a crewed ship. */
+    public static boolean isCrewedGamma(PersonAPI person) {
+        if (!isGamma(person)) return false;
+        if (createdForCrewedShips.contains(person)) return true;
+        CampaignFleetAPI fleet = playerFleet();
+        return fleet != null && hasCoreOnCrewedShip(fleet.getFleetData().getMemberWithCaptain(person));
+    }
+
+    /**
+     * Vanilla AI cores have all their skills at elite level. On crewed ships Support Doctrine only
+     * provides the regular versions. Returns true if anything changed.
+     */
+    public static boolean removeEliteSkills(PersonAPI person) {
+        boolean changed = false;
+        MutableCharacterStatsAPI stats = person.getStats();
+        for (MutableCharacterStatsAPI.SkillLevelAPI skill : stats.getSkillsCopy()) {
+            if (skill.getSkill().isAptitudeEffect() || skill.getLevel() <= 1f) continue;
+            stats.setSkillLevel(skill.getSkill().getId(), 1f);
+            changed = true;
+        }
+        if (changed) stats.refreshCharacterStatsEffects();
+        return changed;
+    }
+
+    /** Strips elite skills from every Gamma core on a crewed ship. */
+    public static void removeEliteSkillsFromCrewedGammas() {
+        CampaignFleetAPI fleet = playerFleet();
+        if (fleet == null) return;
+        for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {
+            if (hasCoreOnCrewedShip(member) && isGamma(member.getCaptain())
+                    && removeEliteSkills(member.getCaptain())) {
+                member.updateStats();
+            }
+        }
+    }
+
     /** Replaces an integrated (unremovable) Gamma core with a fresh, non-integrated one. */
     public static void resetIntegratedGamma(FleetMemberAPI member) {
-        PersonAPI fresh = Misc.getAICoreOfficerPlugin(Commodities.GAMMA_CORE)
-                .createPerson(Commodities.GAMMA_CORE, Factions.PLAYER, null);
-        member.setCaptain(fresh);
+        member.setCaptain(createCrewedGamma());
     }
 
     /**
