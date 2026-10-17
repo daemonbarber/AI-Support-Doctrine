@@ -2,11 +2,13 @@
 
 Reworks the Leadership skill **Support Doctrine** into **AI Support Doctrine** (Starsector 0.98a). Flavor: Tri-Tachyon's "Gamma Assist" AI assistant.
 
+**AI disclosure:** the code, text and documentation for this mod were written by an AI (Claude/Opus 5.5). I came up with the design, directed the changes and tested everything in game.
+
 ![AI Support Doctrine skill tooltip](screenshots/skill-tooltip.png)
 
 ## The skill
 - **Removed:** "Gain non-elite Helmsmanship, Damage Control, Combat Endurance, and Ordnance Expertise".
-- **Added:** "Ships without officers can be supported by Gamma Cores". AI cores in your cargo show up next to your officers in the captain list of crewed ships. Which core types are offered is a setting; the default is Gamma only.
+- **Added:** "Ships without officers can be supported by Gamma Cores". Which core types are offered is a setting; the default is Gamma only.
 - **Kept:**
   - −20% deployment cost (max 10) for unofficered ships. This also applies to crewed ships supported by an AI core.
   - +100% command point recovery. Like with an unofficered ship, it's lost when you command from a ship supported by an AI core.
