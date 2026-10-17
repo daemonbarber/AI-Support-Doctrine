@@ -1,11 +1,18 @@
 {
   "id": "ssd_gamma_support",
-  "name": "Support Doctrine: Gamma Support",
+  "name": "AI Support Doctrine",
   "author": "Barber",
   "utility": "false",
   "version": "0.1.0",
-  "description": "Reworks the Support Doctrine skill: instead of granting free skills to unofficered ships, it lets Gamma cores captain crewed ships (no integration).",
+  "description": "Reworks Support Doctrine into AI Support Doctrine: instead of granting free skills to unofficered ships, it lets Gamma cores support crewed ships from the captain list.",
   "gameVersion": "0.98a-RC8",
   "jars": ["jars/SupportDoctrineGamma.jar"],
+  "replace": [
+    "data/characters/skills/support_doctrine.skill",
+    "data/characters/skills/carrier_group.skill",
+    "data/characters/skills/fighter_uplink.skill",
+    "data/characters/skills/coordinated_maneuvers.skill",
+    "data/characters/skills/wolfpack_tactics.skill"
+  ],
   "modPlugin": "supportdoctrine.SSDModPlugin"
 }

@@ -31,14 +31,24 @@ public class SSDGammaMonitor implements EveryFrameScript {
         CampaignUIAPI ui = Global.getSector().getCampaignUI();
         CoreUITabId tab = ui == null ? null : ui.getCurrentCoreTab();
 
-        // Captains can only be changed through the core UI, so outside it there's nothing to do.
+        // Set the battle difficulty (XP multiplier) before vanilla computes its own, which would count
+        // supporting Gamma cores as officers. Only does work once per battle dialog.
+        if (ui != null && ui.getCurrentInteractionDialog() != null) {
+            try {
+                BattleDifficulty.apply(ui.getCurrentInteractionDialog());
+            } catch (Throwable t) {
+                GammaSupport.LOG.warn("SSD: failed to compute battle difficulty; using vanilla's", t);
+            }
+        }
+
+        // Captains can only be changed through the core UI, so outside it there's nothing else to do.
         if (tab != null) {
             // Fresh baseline when the UI opens; captains may have changed since it was last open.
             if (!wasInCoreUI) GammaSupport.snapshotCaptains();
             // The captain picker can be opened from the Fleet and Refit tabs, so look for it on any tab.
             PickerInjector.advance();
             GammaSupport.reconcileCaptainChanges();
-            GammaSupport.removeEliteSkillsFromCrewedGammas();
+            GammaSupport.normalizeCrewedGammas();
             GammaSupport.snapshotCaptains();
         } else if (wasInCoreUI) {
             enforce();
@@ -57,18 +67,18 @@ public class SSDGammaMonitor implements EveryFrameScript {
 
             if (!hasSkill) {
                 GammaSupport.returnCoreToCargo(member);
-                message(member.getShipName() + ": Gamma core returned to cargo (Support Doctrine no longer known)");
+                message(member.getShipName() + ": Gamma core returned to cargo (AI Support Doctrine no longer known)");
             } else if (!GammaSupport.isGamma(captain)) {
                 String name = captain.getNameString();
                 GammaSupport.returnCoreToCargo(member);
-                message(name + " returned to cargo: Support Doctrine only supports Gamma cores on crewed ships");
+                message(name + " returned to cargo: AI Support Doctrine only supports Gamma cores on crewed ships");
             } else if (Misc.isUnremovable(captain)) {
                 GammaSupport.resetIntegratedGamma(member);
                 Global.getSector().getPlayerStats().addStoryPoints(1);
                 message(member.getShipName() + ": Gamma cores on crewed ships can't be integrated - story point refunded");
             }
         }
-        GammaSupport.removeEliteSkillsFromCrewedGammas();
+        GammaSupport.normalizeCrewedGammas();
         GammaSupport.snapshotCaptains();
     }
 

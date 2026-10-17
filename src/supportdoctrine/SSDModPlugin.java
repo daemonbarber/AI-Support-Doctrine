@@ -9,6 +9,8 @@ public class SSDModPlugin extends BaseModPlugin {
     public void onGameLoad(boolean newGame) {
         // Transient: recreated on every load and never written to the save, so the mod stays removable.
         Global.getSector().addTransientScript(new SSDGammaMonitor());
+        Global.getSector().unregisterPlugin(SSDGammaCorePlugin.Picker.ID);
+        Global.getSector().registerPlugin(new SSDGammaCorePlugin.Picker());
 
         GammaSupport.resetTracking();
         GammaSupport.clearLegacyTags();

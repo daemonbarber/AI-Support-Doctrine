@@ -12,6 +12,7 @@ import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.ui.ButtonAPI;
+import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.util.Misc;
 
 /**
@@ -34,6 +35,8 @@ final class PickerInjector {
     private static final String PERSON_CLASS = "com.fs.starfarer.rpg.Person";
     private static final String CHARACTER_STATS_CLASS = "com.fs.starfarer.campaign.CharacterStats";
     private static final String INTEGRATE_TEXT = "Fully integrate";
+    private static final String FEARLESS_TEXT = "Fearless";
+    private static final String RECKLESS_TEXT = "Reckless";
 
     private static boolean disabled = false;
     private static Object entryCtor = null;
@@ -154,7 +157,7 @@ final class PickerInjector {
         }
 
         for (Object entry : gammaEntries) {
-            disableIntegrateButtons(entry, 0);
+            tidyGammaEntry(entry, 0);
         }
     }
 
@@ -187,7 +190,12 @@ final class PickerInjector {
         return entry;
     }
 
-    private static void disableIntegrateButtons(Object component, int depth) throws Throwable {
+    /**
+     * Per-frame fixes to our Gamma entries: hide "Fully integrate...", and undo the picker's AI-core
+     * label that shows a reckless personality as "Fearless" (Gamma Assists follow the doctrine, so
+     * reckless is a real setting here and should read as one).
+     */
+    private static void tidyGammaEntry(Object component, int depth) throws Throwable {
         if (component instanceof ButtonAPI) {
             ButtonAPI button = (ButtonAPI) component;
             String text = button.getText();
@@ -195,10 +203,16 @@ final class PickerInjector {
                 button.setEnabled(false);
                 button.setOpacity(0f);
             }
+        } else if (component instanceof LabelAPI) {
+            LabelAPI label = (LabelAPI) component;
+            String text = label.getText();
+            if (text != null && text.contains(FEARLESS_TEXT)) {
+                label.setText(text.replace(FEARLESS_TEXT, RECKLESS_TEXT));
+            }
         }
         if (depth > 6 || !Reflect.hasMethod(component, "getChildrenCopy", 0)) return;
         for (Object child : (List<?>) Reflect.call(component, "getChildrenCopy")) {
-            disableIntegrateButtons(child, depth + 1);
+            tidyGammaEntry(child, depth + 1);
         }
     }
 }

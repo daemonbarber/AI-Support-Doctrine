@@ -8,17 +8,18 @@ import com.fs.starfarer.api.util.Misc;
 public class SSDGammaSupportNotes implements DescriptionSkillEffect {
 
     public String getString() {
-        return "*A Gamma core in your cargo appears in the captain list of crewed ships in the Fleet screen. "
-                + "Gamma cores on crewed ships can not be integrated, and other AI cores are not supported.";
+        // Leading newline (as vanilla's Phase Corps note does) moves the note below the flavor text.
+        return "\n*Gamma Cores on crewed ships are limited to non-elite skills and can not be integrated. "
+                + "Ships supported by a Gamma Core do not count as having an officer.";
     }
 
     public Color[] getHighlightColors() {
         Color h = Misc.getDarkHighlightColor();
-        return new Color[] {h};
+        return new Color[] {h, h, h};
     }
 
     public String[] getHighlights() {
-        return new String[] {"can not be integrated"};
+        return new String[] {"non-elite skills", "can not be integrated", "do not count as having an officer"};
     }
 
     public Color getTextColor() {

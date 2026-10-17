@@ -54,7 +54,7 @@ final class Reflect {
             CTOR_NEW_INSTANCE = lookup.findVirtual(ctorClass, "newInstance",
                     MethodType.methodType(Object.class, Object[].class)).asFixedArity();
         } catch (Throwable t) {
-            throw new IllegalStateException("Support Doctrine: reflection setup failed", t);
+            throw new IllegalStateException("AI Support Doctrine: reflection setup failed", t);
         }
     }
 

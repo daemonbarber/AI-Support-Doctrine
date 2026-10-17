@@ -1,10 +1,12 @@
-# Support Doctrine: Gamma Support
+# AI Support Doctrine
 
-Reworks the Leadership skill **Support Doctrine** (Starsector 0.98a).
+Reworks the Leadership skill **Support Doctrine** into **AI Support Doctrine** (Starsector 0.98a). Flavor: Tri-Tachyon's "Gamma Assist" AI assistant.
 
 - **Removed:** "Gain non-elite Helmsmanship, Damage Control, Combat Endurance, and Ordnance Expertise".
 - **Added:** "Ships without officers can be supported by Gamma cores". If you carry a Gamma core, it shows up next to your officers in the captain list of crewed ships in the Fleet screen.
-- **Unchanged:** −20% deployment cost (max 10) for unofficered ships, and +100% command point recovery. A ship with a Gamma core counts as officered.
+- **Kept:** −20% deployment cost (max 10) for unofficered ships, which also applies to crewed ships supported by a Gamma core, and +100% command point recovery, which (like an unofficered ship) is lost when commanding from a ship supported by a Gamma core.
+- A Gamma core on a crewed ship doesn't count as an officer for vanilla skills that boost ships with officers: Carrier Group, Fighter Uplink, Coordinated Maneuvers and Wolfpack Tactics. This mod overrides those skill files, so another mod that changes the same skills will conflict with it. The same applies to battle difficulty (the post-battle XP multiplier): ships supported by a Gamma core count as ships without officers.
+- Gamma cores on crewed ships appear as "Gamma Assist" with the Gamma core icon as their portrait, and follow the fleet doctrine's aggression setting (shown as their personality in the picker and tooltips).
 
 Rules:
 - Only Gamma cores are offered. Alpha and Beta cores never appear for crewed ships. Automated ships behave exactly as in vanilla.

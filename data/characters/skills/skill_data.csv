@@ -1,0 +1,4 @@
+id,name,order,tier,reqPoints,reqPointsPerExtraSkill,description,author,combat officer,admiral,admin,tags,icon,
+support_doctrine,AI Support Doctrine,590,5,4,2,"Not every cadet has talent or skill - but why should that slow down your fleet? Introducing Gamma Assist: the AI assistant that never sleeps.*
+
+*Compliance with Hegemony AI regulations not guaranteed.","Tri-Tachyon commercial, intercepted on the Hyperwave",,TRUE,,,graphics/icons/skills/space_ops.png,

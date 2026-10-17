@@ -10,13 +10,16 @@ import java.util.WeakHashMap;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.CampaignFleetAPI;
+import com.fs.starfarer.api.campaign.FactionAPI;
 import com.fs.starfarer.api.campaign.FleetDataAPI;
+import com.fs.starfarer.api.characters.FullName;
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
+import com.fs.starfarer.api.impl.campaign.ids.Personalities;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.util.Misc;
 import org.apache.log4j.Logger;
@@ -97,8 +100,60 @@ public final class GammaSupport {
         PersonAPI gamma = Misc.getAICoreOfficerPlugin(Commodities.GAMMA_CORE)
                 .createPerson(Commodities.GAMMA_CORE, Factions.PLAYER, null);
         removeEliteSkills(gamma);
+        applyDoctrinePersonality(gamma);
+        applyGammaAssistIdentity(gamma);
         createdForCrewedShips.add(gamma);
         return gamma;
+    }
+
+    /**
+     * Shows the Gamma core's cargo icon as its portrait (instead of the AI officer portrait) and
+     * names it after Tri-Tachyon's "Gamma Assist" product, as on the skill's flavor text.
+     */
+    public static void applyGammaAssistIdentity(PersonAPI person) {
+        String icon = Global.getSettings().getCommoditySpec(Commodities.GAMMA_CORE).getIconName();
+        if (icon != null && !icon.equals(person.getPortraitSprite())) {
+            person.setPortraitSprite(icon);
+        }
+        if (!CREWED_GAMMA_NAME.equals(person.getNameString())) {
+            person.setName(new FullName(CREWED_GAMMA_NAME, "", FullName.Gender.ANY));
+        }
+    }
+
+    public static final String CREWED_GAMMA_NAME = "Gamma Assist";
+
+    /**
+     * AI cores are created reckless (shown as "Fearless"). On crewed ships they should behave like
+     * the ship's crew would without an officer, i.e. follow the player's doctrine aggression.
+     * Returns true if the personality changed.
+     */
+    public static boolean applyDoctrinePersonality(PersonAPI person) {
+        String current = person.getPersonalityAPI() == null ? null : person.getPersonalityAPI().getId();
+        String target = doctrinePersonality(current);
+        if (target == null || target.equals(current)) return false;
+        person.setPersonality(target);
+        return true;
+    }
+
+    private static String doctrinePersonality(String current) {
+        FactionAPI faction = Global.getSector().getPlayerFaction();
+        switch (faction.getDoctrine().getAggression()) {
+            case 1:
+                return Personalities.CAUTIOUS;
+            case 2:
+                return Personalities.STEADY;
+            case 3:
+                return Personalities.AGGRESSIVE;
+            case 5:
+                return Personalities.RECKLESS;
+            default:
+                // Level 4 is a mix of aggressive and reckless. Keep a core's existing pick so it
+                // doesn't change every time it's checked; otherwise pick like the game does.
+                if (Personalities.AGGRESSIVE.equals(current) || Personalities.RECKLESS.equals(current)) {
+                    return current;
+                }
+                return faction.getPersonalityPicker().pick();
+        }
     }
 
     /** Whether this person is a Gamma core serving (or offered to) a crewed ship. */
@@ -125,15 +180,20 @@ public final class GammaSupport {
         return changed;
     }
 
-    /** Strips elite skills from every Gamma core on a crewed ship. */
-    public static void removeEliteSkillsFromCrewedGammas() {
+    /**
+     * Brings every Gamma core on a crewed ship in line with Support Doctrine: no elite skills, the
+     * doctrine's aggression instead of the AI core default, and the core icon as its portrait.
+     */
+    public static void normalizeCrewedGammas() {
         CampaignFleetAPI fleet = playerFleet();
         if (fleet == null) return;
         for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {
-            if (hasCoreOnCrewedShip(member) && isGamma(member.getCaptain())
-                    && removeEliteSkills(member.getCaptain())) {
-                member.updateStats();
-            }
+            if (!hasCoreOnCrewedShip(member) || !isGamma(member.getCaptain())) continue;
+            PersonAPI gamma = member.getCaptain();
+            boolean skillsChanged = removeEliteSkills(gamma);
+            applyDoctrinePersonality(gamma);
+            applyGammaAssistIdentity(gamma);
+            if (skillsChanged) member.updateStats();
         }
     }
 

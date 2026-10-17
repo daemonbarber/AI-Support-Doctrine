@@ -16,8 +16,8 @@
 			"effectBasedOnLevel":false,
 			"effects":[
 				{"type":"ALL_SHIPS_IN_FLEET", "script":"supportdoctrine.skills.SSDGammaSupportEffect"},
-				{"type":"ALL_SHIPS_IN_FLEET", "script":"com.fs.starfarer.api.impl.campaign.skills.SupportDoctrine$Level2"},
-				{"type":"SHIP", "script":"com.fs.starfarer.api.impl.campaign.skills.SupportDoctrine$Level3"},
+				{"type":"ALL_SHIPS_IN_FLEET", "script":"supportdoctrine.skills.SSDDeploymentCostEffect"},
+				{"type":"SHIP", "script":"supportdoctrine.skills.SSDCommandPointEffect"},
 			]
 		},
 	],

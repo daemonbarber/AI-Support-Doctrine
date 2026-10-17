@@ -17,7 +17,7 @@ public class SSDGammaSupportEffect implements ShipSkillEffect {
     }
 
     public String getEffectDescription(float level) {
-        return "Ships without officers can be supported by Gamma cores";
+        return "Ships without officers can be supported by Gamma Cores";
     }
 
     public String getEffectPerLevelDescription() {
