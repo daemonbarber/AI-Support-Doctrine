@@ -103,8 +103,8 @@ final class PickerInjector {
 
     /**
      * Hides the capstone skill buttons (Gamma Assists can't take them), leaving a gap in the layout.
-     * Returns how many were found. Also descends into scrollers' content containers and dialogs'
-     * inner panels, since those aren't part of the regular child list.
+     * Returns how many were found. Also descends into dialogs' inner panels, since those aren't part
+     * of the regular child list.
      */
     private static int hideBlockedSkillButtons(Object component, int depth) throws Throwable {
         int found = 0;
@@ -122,10 +122,6 @@ final class PickerInjector {
             for (Object child : (List<?>) Reflect.call(component, "getChildrenCopy")) {
                 found += hideBlockedSkillButtons(child, depth + 1);
             }
-        }
-        if (Reflect.hasMethod(component, "getContentContainer", 0)) {
-            Object content = Reflect.call(component, "getContentContainer");
-            if (content != null) found += hideBlockedSkillButtons(content, depth + 1);
         }
         // Dialogs add their contents (including the skill buttons) to an inner panel that isn't in
         // their regular child list.
@@ -156,7 +152,8 @@ final class PickerInjector {
         // getItems() is the live list; copy it since we add/remove entries below.
         List<?> items = new ArrayList<>((List<?>) Reflect.call(list, "getItems"));
 
-        boolean allowed = GammaSupport.canReceiveGamma(member);
+        // Fighter wings and automated ships were already excluded above.
+        boolean allowed = GammaSupport.playerHasSkill();
         // The player's own ship may take a core from another ship (a swap, finished by
         // GammaSupport.reconcileCaptainChanges), but not one from cargo: that would leave the player
         // without a ship, which vanilla never allows.

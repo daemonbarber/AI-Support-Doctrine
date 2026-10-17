@@ -85,7 +85,6 @@ public class SSDGammaMonitor implements EveryFrameScript {
             }
         }
         GammaSupport.normalizeCrewedGammas();
-        GammaSupport.snapshotCaptains();
     }
 
     private static void message(String text) {

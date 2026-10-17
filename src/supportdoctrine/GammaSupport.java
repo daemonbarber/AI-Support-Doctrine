@@ -16,13 +16,11 @@ import com.fs.starfarer.api.campaign.FleetDataAPI;
 import com.fs.starfarer.api.characters.FullName;
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
-import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.Personalities;
 import com.fs.starfarer.api.impl.campaign.ids.Skills;
-import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.util.Misc;
 import org.apache.log4j.Logger;
 
@@ -32,11 +30,6 @@ public final class GammaSupport {
     public static final Logger LOG = Global.getLogger(GammaSupport.class);
 
     public static final String SKILL_ID = "support_doctrine";
-
-    // Tags written by early test builds, which tagged ships as automated. Only used for cleanup.
-    private static final String LEGACY_MARKER = "ssd_gamma_tagged";
-    private static final String LEGACY_ADDED_AUTOMATED = "ssd_added_automated";
-    private static final String LEGACY_ADDED_NO_PENALTY = "ssd_added_no_auto_penalty";
 
     /**
      * Fleet member id -> captain, as of the last check. Used to finish swaps that vanilla's captain
@@ -65,12 +58,6 @@ public final class GammaSupport {
     public static boolean hasCoreOnCrewedShip(FleetMemberAPI member) {
         return member != null && !member.isFighterWing() && !Misc.isAutomated(member)
                 && member.getCaptain() != null && member.getCaptain().isAICore();
-    }
-
-    /** Whether the captain picker for this ship should offer Gamma cores. */
-    public static boolean canReceiveGamma(FleetMemberAPI member) {
-        if (member == null || member.isFighterWing() || Misc.isAutomated(member)) return false;
-        return playerHasSkill();
     }
 
     public static boolean isPlayerShip(FleetMemberAPI member) {
@@ -122,7 +109,7 @@ public final class GammaSupport {
         }
     }
 
-    public static final String CREWED_GAMMA_NAME = "Gamma Assist";
+    public static final String CREWED_GAMMA_NAME = "Gamma Assist - by Tri-Tachyon";
 
     /**
      * AI cores are created reckless (shown as "Fearless"). On crewed ships they should behave like
@@ -306,24 +293,4 @@ public final class GammaSupport {
         }
     }
 
-    /** Called on game load; tracking only makes sense within one session. */
-    public static void resetTracking() {
-        lastCaptains.clear();
-    }
-
-    /** Removes automated tags added by early test builds of this mod. */
-    public static void clearLegacyTags() {
-        CampaignFleetAPI fleet = playerFleet();
-        if (fleet == null) return;
-        for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {
-            ShipVariantAPI variant = member.getVariant();
-            if (variant == null || !variant.hasTag(LEGACY_MARKER)) continue;
-            if (variant.hasTag(LEGACY_ADDED_AUTOMATED)) variant.removeTag(Tags.AUTOMATED);
-            if (variant.hasTag(LEGACY_ADDED_NO_PENALTY)) variant.removeTag(Tags.TAG_AUTOMATED_NO_PENALTY);
-            variant.removeTag(LEGACY_ADDED_AUTOMATED);
-            variant.removeTag(LEGACY_ADDED_NO_PENALTY);
-            variant.removeTag(LEGACY_MARKER);
-            member.updateStats();
-        }
-    }
 }

@@ -12,8 +12,6 @@ public class SSDModPlugin extends BaseModPlugin {
         Global.getSector().unregisterPlugin(SSDGammaCorePlugin.Picker.ID);
         Global.getSector().registerPlugin(new SSDGammaCorePlugin.Picker());
 
-        GammaSupport.resetTracking();
-        GammaSupport.clearLegacyTags();
         SSDGammaMonitor.enforce();
     }
 }
