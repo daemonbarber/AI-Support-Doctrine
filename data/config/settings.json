@@ -1,0 +1,5 @@
+{
+	"plugins":{
+		"ssd_gammaAssistCombatPlugin":"supportdoctrine.SSDCombatPlugin",
+	},
+}

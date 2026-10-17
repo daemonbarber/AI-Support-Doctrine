@@ -6,7 +6,7 @@ Reworks the Leadership skill **Support Doctrine** into **AI Support Doctrine** (
 - **Added:** "Ships without officers can be supported by Gamma cores". If you carry a Gamma core, it shows up next to your officers in the captain list of crewed ships in the Fleet screen.
 - **Kept:** −20% deployment cost (max 10) for unofficered ships, which also applies to crewed ships supported by a Gamma core, and +100% command point recovery, which (like an unofficered ship) is lost when commanding from a ship supported by a Gamma core.
 - A Gamma core on a crewed ship doesn't count as an officer for vanilla skills that boost ships with officers: Carrier Group, Fighter Uplink, Coordinated Maneuvers and Wolfpack Tactics. This mod overrides those skill files, so another mod that changes the same skills will conflict with it. The same applies to battle difficulty (the post-battle XP multiplier): ships supported by a Gamma core count as ships without officers.
-- Gamma cores on crewed ships appear as "Gamma Assist" with the Gamma core icon as their portrait, and follow the fleet doctrine's aggression setting (shown as their personality in the picker and tooltips).
+- Gamma cores on crewed ships appear as "Gamma Assist" with the Gamma core icon as their portrait, and follow the fleet doctrine's aggression setting (shown as their personality in the picker and tooltips). At aggression 4, like vanilla's ships without officers, each one rolls aggressive or reckless at the start of each battle; out of combat it shows as aggressive.
 
 Rules:
 - Only Gamma cores are offered. Alpha and Beta cores never appear for crewed ships. Automated ships behave exactly as in vanilla.

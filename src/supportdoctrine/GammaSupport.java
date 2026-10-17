@@ -149,13 +149,17 @@ public final class GammaSupport {
             case 5:
                 return Personalities.RECKLESS;
             default:
-                // Level 4 is a mix of aggressive and reckless. Keep a core's existing pick so it
-                // doesn't change every time it's checked; otherwise pick like the game does.
-                if (Personalities.AGGRESSIVE.equals(current) || Personalities.RECKLESS.equals(current)) {
-                    return current;
-                }
-                return faction.getPersonalityPicker().pick();
+                // Level 4 is a mix of aggressive and reckless. Like vanilla does for ships without
+                // officers, the actual pick happens per battle (SSDCombatPlugin); out of combat the
+                // core shows as aggressive so it doesn't change between looks.
+                return Personalities.AGGRESSIVE;
         }
+    }
+
+    /** True when the doctrine's aggression is the aggressive/reckless mix (level 4). */
+    public static boolean isMixedAggression() {
+        return Global.getSector() != null && Global.getSector().getPlayerFaction() != null
+                && Global.getSector().getPlayerFaction().getDoctrine().getAggression() == 4;
     }
 
     /** Whether this person is a Gamma core serving (or offered to) a crewed ship. */

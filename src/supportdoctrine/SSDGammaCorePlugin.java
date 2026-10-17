@@ -35,6 +35,10 @@ public class SSDGammaCorePlugin extends AICoreOfficerPluginImpl {
         tooltip.addPara(personality.getDescription(), opad);
         tooltip.addPara("Gamma Assist follows the %s setting of your fleet doctrine.", opad,
                 Misc.getGrayColor(), Misc.getHighlightColor(), "aggression");
+        if (GammaSupport.isMixedAggression()) {
+            tooltip.addPara("At the current setting, it is %s or %s at random each battle.", opad,
+                    Misc.getGrayColor(), Misc.getHighlightColor(), "aggressive", "reckless");
+        }
     }
 
     /** Offers SSDGammaCorePlugin for Gamma cores. Transient, so it's never written to the save. */
