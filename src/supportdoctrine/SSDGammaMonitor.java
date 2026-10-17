@@ -46,13 +46,16 @@ public class SSDGammaMonitor implements EveryFrameScript {
         // it opens) only exists on the Fleet and Refit tabs, so the per-frame work is limited to those.
         // Changes made elsewhere (respec on the Character tab, doctrine aggression) are handled by
         // enforce() when the core UI closes.
+        // Pick up changes made in the LunaLib settings menu.
+        if (tab != null && !wasInCoreUI) SSDSettings.reload();
+
         boolean pickerTab = tab == CoreUITabId.FLEET || tab == CoreUITabId.REFIT;
         if (pickerTab) {
             // Fresh baseline on arrival; captains may have changed since we last looked.
             if (!wasOnPickerTab) GammaSupport.snapshotCaptains();
             PickerInjector.advance();
             GammaSupport.reconcileCaptainChanges();
-            GammaSupport.normalizeCrewedGammas();
+            GammaSupport.normalizeCrewedCores();
             GammaSupport.snapshotCaptains();
         }
         if (tab == null && wasInCoreUI) {
@@ -71,20 +74,21 @@ public class SSDGammaMonitor implements EveryFrameScript {
             if (!GammaSupport.hasCoreOnCrewedShip(member)) continue;
             PersonAPI captain = member.getCaptain();
 
+            String name = captain.getNameString();
             if (!hasSkill) {
                 GammaSupport.returnCoreToCargo(member);
-                message(member.getShipName() + ": Gamma core returned to cargo (AI Support Doctrine no longer known)");
-            } else if (!GammaSupport.isGamma(captain)) {
-                String name = captain.getNameString();
+                message(member.getShipName() + ": " + name + " returned to cargo (AI Support Doctrine no longer known)");
+            } else if (!GammaSupport.isSupportCore(captain)) {
                 GammaSupport.returnCoreToCargo(member);
-                message(name + " returned to cargo: AI Support Doctrine only supports Gamma cores on crewed ships");
+                message(name + " returned to cargo: AI Support Doctrine only allows "
+                        + SSDSettings.allowedCoresText() + " on crewed ships");
             } else if (Misc.isUnremovable(captain)) {
-                GammaSupport.resetIntegratedGamma(member);
+                GammaSupport.resetIntegratedCore(member);
                 Global.getSector().getPlayerStats().addStoryPoints(1);
-                message(member.getShipName() + ": Gamma cores on crewed ships can't be integrated - story point refunded");
+                message(member.getShipName() + ": AI cores on crewed ships can't be integrated - story point refunded");
             }
         }
-        GammaSupport.normalizeCrewedGammas();
+        GammaSupport.normalizeCrewedCores();
     }
 
     private static void message(String text) {

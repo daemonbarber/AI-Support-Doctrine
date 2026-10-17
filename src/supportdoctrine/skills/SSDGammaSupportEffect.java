@@ -1,5 +1,7 @@
 package supportdoctrine.skills;
 
+import supportdoctrine.SSDSettings;
+
 import com.fs.starfarer.api.characters.ShipSkillEffect;
 import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
@@ -17,7 +19,7 @@ public class SSDGammaSupportEffect implements ShipSkillEffect {
     }
 
     public String getEffectDescription(float level) {
-        return "Ships without officers can be supported by Gamma Cores";
+        return "Ships without officers can be supported by " + SSDSettings.allowedCoresText();
     }
 
     public String getEffectPerLevelDescription() {

@@ -1,0 +1,6 @@
+fieldID,fieldName,fieldType,defaultValue,secondaryValue,fieldDescription,minValue,maxValue,tab
+ssd_header,AI Support Doctrine,Header,AI Support Doctrine,,,,,
+ssd_allowedCores,Allowed AI cores,Radio,Gamma only,"Gamma only, Gamma + Beta, Gamma + Beta + Alpha","Which AI cores can support crewed ships. Cores that are no longer allowed are returned to cargo when you close the Fleet screen.",,,
+ssd_nonEliteOnly,Non-elite skills only,Boolean,true,,"If enabled, Gamma Cores supporting crewed ships only get the regular (non-elite) versions of their skills, including skills picked with Change skills. If disabled, they keep elite skills like vanilla AI cores.",,,
+ssd_blockCapstones,Block capstone skills,Boolean,true,,"If enabled, Gamma Cores supporting crewed ships can't take Systems Expertise or Missile Specialization.",,,
+ssd_countsAsOfficer,Gamma Assists count as officers,Boolean,false,,"If enabled, ships supported by a Gamma Core count as having an officer for other skills (Carrier Group, Fighter Uplink, Coordinated Maneuvers, Wolfpack Tactics) and for battle difficulty (XP). AI Support Doctrine's own effects are unaffected.",,,

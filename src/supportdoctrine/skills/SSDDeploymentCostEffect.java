@@ -9,7 +9,6 @@ import com.fs.starfarer.api.impl.campaign.ids.HullMods;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.impl.campaign.skills.SupportDoctrine;
 import com.fs.starfarer.api.util.Misc;
-import supportdoctrine.GammaSupport;
 
 /**
  * Vanilla SupportDoctrine$Level2 (deployment cost reduction for ships without officers), except a
@@ -47,6 +46,6 @@ public class SSDDeploymentCostEffect extends SupportDoctrine.Level2 {
             automated = Misc.isAutomated(member);
         }
         if (captain == null || captain.isDefault()) return true;
-        return !automated && GammaSupport.isGamma(captain);
+        return !automated && captain.isAICore();
     }
 }

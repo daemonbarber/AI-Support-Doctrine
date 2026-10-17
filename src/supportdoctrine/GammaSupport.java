@@ -17,14 +17,17 @@ import com.fs.starfarer.api.characters.FullName;
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
-import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.Personalities;
 import com.fs.starfarer.api.impl.campaign.ids.Skills;
 import com.fs.starfarer.api.util.Misc;
 import org.apache.log4j.Logger;
 
-/** Shared helpers for Gamma cores captaining crewed (non-automated) ships. */
+/**
+ * Shared helpers for AI cores supporting crewed (non-automated) ships ("Assists"). Which cores are
+ * allowed comes from SSDSettings (Gamma only by default). Vanilla never puts AI cores on crewed
+ * ships, so any AI core on a crewed ship in the player's fleet is one of ours.
+ */
 public final class GammaSupport {
 
     public static final Logger LOG = Global.getLogger(GammaSupport.class);
@@ -33,7 +36,7 @@ public final class GammaSupport {
 
     /**
      * Fleet member id -> captain, as of the last check. Used to finish swaps that vanilla's captain
-     * picker only half-does when a Gamma core on a crewed ship is involved.
+     * picker only half-does when an AI core on a crewed ship is involved.
      */
     private static final Map<String, PersonAPI> lastCaptains = new HashMap<>();
 
@@ -50,8 +53,9 @@ public final class GammaSupport {
         return Global.getSector().getPlayerStats().getSkillLevel(SKILL_ID) > 0;
     }
 
-    public static boolean isGamma(PersonAPI person) {
-        return person != null && person.isAICore() && Commodities.GAMMA_CORE.equals(person.getAICoreId());
+    /** An AI core of a type currently allowed to support crewed ships. */
+    public static boolean isSupportCore(PersonAPI person) {
+        return person != null && person.isAICore() && SSDSettings.isAllowedCore(person.getAICoreId());
     }
 
     /** A crewed ship captained by an AI core (only possible through this mod). */
@@ -80,51 +84,57 @@ public final class GammaSupport {
         }
     }
 
-    /** Gamma core persons created by this mod for crewed ships' pickers (not yet assigned). */
+    /** AI core persons created by this mod for crewed ships' pickers (not yet assigned). */
     private static final Set<PersonAPI> createdForCrewedShips =
             Collections.newSetFromMap(new WeakHashMap<PersonAPI, Boolean>());
 
-    /** A new Gamma core person, as it should look on a crewed ship (no elite skills). */
-    public static PersonAPI createCrewedGamma() {
-        PersonAPI gamma = Misc.getAICoreOfficerPlugin(Commodities.GAMMA_CORE)
-                .createPerson(Commodities.GAMMA_CORE, Factions.PLAYER, null);
-        removeEliteSkills(gamma);
-        applyDoctrinePersonality(gamma);
-        applyGammaAssistIdentity(gamma);
-        createdForCrewedShips.add(gamma);
-        return gamma;
+    /** A new AI core person, as it should look on a crewed ship. */
+    public static PersonAPI createCrewedCore(String coreId) {
+        PersonAPI core = Misc.getAICoreOfficerPlugin(coreId).createPerson(coreId, Factions.PLAYER, null);
+        normalize(core);
+        createdForCrewedShips.add(core);
+        return core;
+    }
+
+    /** Whether this person is an AI core serving (or offered to) a crewed ship. */
+    public static boolean isCrewedCore(PersonAPI person) {
+        if (person == null || !person.isAICore()) return false;
+        if (createdForCrewedShips.contains(person)) return true;
+        CampaignFleetAPI fleet = playerFleet();
+        return fleet != null && hasCoreOnCrewedShip(fleet.getFleetData().getMemberWithCaptain(person));
     }
 
     /**
-     * Shows the Gamma core's cargo icon as its portrait (instead of the AI officer portrait) and
-     * names it after Tri-Tachyon's "Gamma Assist" product, as on the skill's flavor text.
+     * Shows the core's cargo icon as its portrait (instead of the AI officer portrait) and names it
+     * after Tri-Tachyon's "Assist" product line, as on the skill's flavor text.
      */
-    public static void applyGammaAssistIdentity(PersonAPI person) {
-        String icon = Global.getSettings().getCommoditySpec(Commodities.GAMMA_CORE).getIconName();
+    public static void applyAssistIdentity(PersonAPI person) {
+        String coreId = person.getAICoreId();
+        String icon = Global.getSettings().getCommoditySpec(coreId).getIconName();
         if (icon != null && !icon.equals(person.getPortraitSprite())) {
             person.setPortraitSprite(icon);
         }
-        if (!CREWED_GAMMA_NAME.equals(person.getNameString())) {
-            person.setName(new FullName(CREWED_GAMMA_NAME, "", FullName.Gender.ANY));
+        if (!ASSIST_NAME.equals(person.getNameString())) {
+            person.setName(new FullName(ASSIST_NAME, "", FullName.Gender.ANY));
         }
     }
 
-    public static final String CREWED_GAMMA_NAME = "Gamma Assist - by Tri-Tachyon";
+    /** Every supporting core uses the product name, whichever core it actually is. */
+    public static final String ASSIST_NAME = "Gamma Assist - by Tri-Tachyon";
 
     /**
      * AI cores are created reckless (shown as "Fearless"). On crewed ships they should behave like
      * the ship's crew would without an officer, i.e. follow the player's doctrine aggression.
-     * Returns true if the personality changed.
      */
-    public static boolean applyDoctrinePersonality(PersonAPI person) {
+    public static void applyDoctrinePersonality(PersonAPI person) {
         String current = person.getPersonalityAPI() == null ? null : person.getPersonalityAPI().getId();
-        String target = doctrinePersonality(current);
-        if (target == null || target.equals(current)) return false;
-        person.setPersonality(target);
-        return true;
+        String target = doctrinePersonality();
+        if (target != null && !target.equals(current)) {
+            person.setPersonality(target);
+        }
     }
 
-    private static String doctrinePersonality(String current) {
+    private static String doctrinePersonality() {
         FactionAPI faction = Global.getSector().getPlayerFaction();
         switch (faction.getDoctrine().getAggression()) {
             case 1:
@@ -149,31 +159,28 @@ public final class GammaSupport {
                 && Global.getSector().getPlayerFaction().getDoctrine().getAggression() == 4;
     }
 
-    /** Whether this person is a Gamma core serving (or offered to) a crewed ship. */
-    public static boolean isCrewedGamma(PersonAPI person) {
-        if (!isGamma(person)) return false;
-        if (createdForCrewedShips.contains(person)) return true;
-        CampaignFleetAPI fleet = playerFleet();
-        return fleet != null && hasCoreOnCrewedShip(fleet.getFleetData().getMemberWithCaptain(person));
+    /** Drops elite skills to regular. Returns true if anything changed. */
+    public static boolean removeEliteSkills(MutableCharacterStatsAPI stats) {
+        return setSkillTier(stats, 1f);
     }
 
-    /**
-     * Vanilla AI cores have all their skills at elite level. On crewed ships Support Doctrine only
-     * provides the regular versions. Returns true if anything changed.
-     */
-    public static boolean removeEliteSkills(PersonAPI person) {
+    /** Raises regular skills to elite, as vanilla AI cores have them. Returns true if anything changed. */
+    public static boolean restoreEliteSkills(MutableCharacterStatsAPI stats) {
+        return setSkillTier(stats, 2f);
+    }
+
+    private static boolean setSkillTier(MutableCharacterStatsAPI stats, float level) {
         boolean changed = false;
-        MutableCharacterStatsAPI stats = person.getStats();
         for (MutableCharacterStatsAPI.SkillLevelAPI skill : stats.getSkillsCopy()) {
-            if (skill.getSkill().isAptitudeEffect() || skill.getLevel() <= 1f) continue;
-            stats.setSkillLevel(skill.getSkill().getId(), 1f);
+            if (skill.getSkill().isAptitudeEffect() || skill.getLevel() <= 0f || skill.getLevel() == level) continue;
+            stats.setSkillLevel(skill.getSkill().getId(), level);
             changed = true;
         }
         if (changed) stats.refreshCharacterStatsEffects();
         return changed;
     }
 
-    /** Capstone (tier 5) combat skills that Gamma Assists can't have. */
+    /** Capstone (tier 5) combat skills that Assists can't have (if the setting is on). */
     public static final Set<String> BLOCKED_SKILLS = new HashSet<>(Arrays.asList(
             Skills.SYSTEMS_EXPERTISE, Skills.MISSILE_SPECIALIZATION));
 
@@ -189,36 +196,43 @@ public final class GammaSupport {
         return changed;
     }
 
-    /**
-     * Brings every Gamma core on a crewed ship in line with Support Doctrine: no elite or capstone skills, the
-     * doctrine's aggression instead of the AI core default, and the core icon as its portrait.
-     */
-    public static void normalizeCrewedGammas() {
+    /** Applies the skill rules from the settings to a set of stats. Returns true if anything changed. */
+    public static boolean applySkillRules(MutableCharacterStatsAPI stats) {
+        boolean changed = SSDSettings.nonEliteOnly ? removeEliteSkills(stats) : restoreEliteSkills(stats);
+        if (SSDSettings.blockCapstones) changed |= removeBlockedSkills(stats);
+        return changed;
+    }
+
+    /** Skill rules, doctrine personality, and Assist name/portrait. Returns true if skills changed. */
+    private static boolean normalize(PersonAPI core) {
+        boolean skillsChanged = applySkillRules(core.getStats());
+        applyDoctrinePersonality(core);
+        applyAssistIdentity(core);
+        return skillsChanged;
+    }
+
+    /** Brings every AI core on a crewed ship in line with the mod's rules and look. */
+    public static void normalizeCrewedCores() {
         CampaignFleetAPI fleet = playerFleet();
         if (fleet == null) return;
         for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {
-            if (!hasCoreOnCrewedShip(member) || !isGamma(member.getCaptain())) continue;
-            PersonAPI gamma = member.getCaptain();
-            boolean skillsChanged = removeEliteSkills(gamma);
-            skillsChanged |= removeBlockedSkills(gamma.getStats());
-            applyDoctrinePersonality(gamma);
-            applyGammaAssistIdentity(gamma);
-            if (skillsChanged) member.updateStats();
+            if (!hasCoreOnCrewedShip(member)) continue;
+            if (normalize(member.getCaptain())) member.updateStats();
         }
     }
 
-    /** Replaces an integrated (unremovable) Gamma core with a fresh, non-integrated one. */
-    public static void resetIntegratedGamma(FleetMemberAPI member) {
-        member.setCaptain(createCrewedGamma());
+    /** Replaces an integrated (unremovable) core with a fresh, non-integrated one of the same type. */
+    public static void resetIntegratedCore(FleetMemberAPI member) {
+        member.setCaptain(createCrewedCore(member.getCaptain().getAICoreId()));
     }
 
     /**
-     * Finishes captain swaps that vanilla's picker only half-does when a Gamma core on a crewed ship
+     * Finishes captain swaps that vanilla's picker only half-does when an AI core on a crewed ship
      * is involved, by comparing against the last snapshot. The picker has two click paths:
-     * - AI-core path (a Gamma entry was clicked): the core moves onto the ship and its old ship is
+     * - AI-core path (a core entry was clicked): the core moves onto the ship and its old ship is
      *   left blank, while the officer or player it displaced is dropped. Put them on the old ship
      *   (the player via setFlagship, as vanilla does when taking command).
-     * - Officer path (an officer or the player was clicked): they move onto the Gamma ship and the
+     * - Officer path (an officer or the player was clicked): they move onto the core's ship and the
      *   core is dropped. Put it on the ship they came from, or refund it if there's no such ship.
      * Unassigning or replacing a core with another core goes through vanilla's AI-core path, which
      * already returns cores to cargo, so those cases are left alone.
@@ -233,11 +247,11 @@ public final class GammaSupport {
             if (member.getCaptain() != null) assigned.add(member.getCaptain());
         }
 
-        // AI-core path: a Gamma core was pulled onto this ship from another one.
+        // AI-core path: a core was pulled onto this ship from another one.
         for (FleetMemberAPI ship : members) {
             PersonAPI now = ship.getCaptain();
             PersonAPI before = lastCaptains.get(ship.getId());
-            if (!isGamma(now) || before == now || Misc.isAutomated(ship)) continue;
+            if (now == null || !now.isAICore() || before == now || Misc.isAutomated(ship)) continue;
             if (!isRealCaptain(before) || assigned.contains(before)) continue;
             FleetMemberAPI source = previousShipOf(now, members);
             if (source == null || source == ship || Misc.isAutomated(source)
@@ -251,20 +265,20 @@ public final class GammaSupport {
             LOG.info("SSD: swapped " + before.getNameString() + " onto " + source.getShipName());
         }
 
-        // Officer path: an officer or the player replaced the Gamma core on this ship.
+        // Officer path: an officer or the player replaced the core on this ship.
         for (FleetMemberAPI ship : members) {
             PersonAPI before = lastCaptains.get(ship.getId());
             PersonAPI now = ship.getCaptain();
-            if (!isGamma(before) || before == now || Misc.isAutomated(ship)) continue;
+            if (before == null || !before.isAICore() || before == now || Misc.isAutomated(ship)) continue;
             if (!isRealCaptain(now) || assigned.contains(before)) continue;
             FleetMemberAPI origin = previousShipOf(now, members);
             if (origin != null && origin != ship && !Misc.isAutomated(origin)
                     && origin.getCaptain() != null && origin.getCaptain().isDefault()) {
                 origin.setCaptain(before);
-                LOG.info("SSD: swapped Gamma core onto " + origin.getShipName());
+                LOG.info("SSD: swapped " + before.getNameString() + " onto " + origin.getShipName());
             } else {
-                addCoreToCargo(Commodities.GAMMA_CORE);
-                LOG.info("SSD: refunded Gamma core replaced on " + ship.getShipName());
+                addCoreToCargo(before.getAICoreId());
+                LOG.info("SSD: refunded " + before.getNameString() + " replaced on " + ship.getShipName());
             }
             assigned.add(before);
         }
@@ -292,5 +306,4 @@ public final class GammaSupport {
             lastCaptains.put(member.getId(), member.getCaptain());
         }
     }
-
 }

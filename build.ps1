@@ -9,6 +9,12 @@ $core = Join-Path $GameDir "starsector-core"
 $cp = @("starfarer.api.jar", "starfarer_obf.jar", "lwjgl.jar", "lwjgl_util.jar", "json.jar", "log4j-1.2.9.jar") |
     ForEach-Object { Join-Path $core $_ }
 
+# LunaLib is an optional dependency at runtime, but needed to compile SSDLunaBridge.
+$luna = Get-ChildItem (Join-Path $GameDir "mods") -Directory -Filter "LunaLib*" |
+    ForEach-Object { Join-Path $_.FullName "jars\LunaLib.jar" } | Where-Object { Test-Path $_ } | Select-Object -First 1
+if (-not $luna) { throw "LunaLib.jar not found under $GameDir\mods" }
+$cp += $luna
+
 $buildDir = Join-Path $root "build"
 $jarDir = Join-Path $root "jars"
 if (Test-Path $buildDir) { Remove-Item -Recurse -Force $buildDir }

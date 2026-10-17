@@ -42,7 +42,7 @@ final class BattleDifficulty {
     private static boolean isOfficer(FleetMemberAPI member) {
         PersonAPI captain = member.getCaptain();
         if (captain == null || captain.isDefault()) return false;
-        return Misc.isAutomated(member) || !GammaSupport.isGamma(captain);
+        return Misc.isAutomated(member) || !captain.isAICore() || SSDSettings.countsAsOfficer;
     }
 
     private static float compute(BattleAPI battle) {

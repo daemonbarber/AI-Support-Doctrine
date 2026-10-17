@@ -58,7 +58,7 @@ public class SSDCombatPlugin extends BaseEveryFrameCombatPlugin {
         if (!active || engine == null) return;
         for (ShipAPI ship : engine.getShips()) {
             if (ship.isFighter() || ship.getShipAI() == null || !isPlayerShip(ship)) continue;
-            if (!GammaSupport.isGamma(ship.getCaptain()) || Misc.isAutomated(ship)) continue;
+            if (ship.getCaptain() == null || !ship.getCaptain().isAICore() || Misc.isAutomated(ship)) continue;
 
             ShipAIConfig config = ship.getShipAI().getConfig();
             if (config == null) continue;

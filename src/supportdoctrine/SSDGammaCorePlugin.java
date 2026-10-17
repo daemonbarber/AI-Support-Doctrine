@@ -23,7 +23,7 @@ public class SSDGammaCorePlugin extends AICoreOfficerPluginImpl {
     @Override
     public void createPersonalitySection(PersonAPI person, TooltipMakerAPI tooltip) {
         PersonalityAPI personality = person.getPersonalityAPI();
-        if (!GammaSupport.isCrewedGamma(person) || personality == null) {
+        if (!GammaSupport.isCrewedCore(person) || personality == null) {
             super.createPersonalitySection(person, tooltip);
             return;
         }
@@ -33,7 +33,7 @@ public class SSDGammaCorePlugin extends AICoreOfficerPluginImpl {
         tooltip.addSectionHeading("Personality: " + personality.getDisplayName().toLowerCase(),
                 text, bg, Alignment.MID, 20);
         tooltip.addPara(personality.getDescription(), opad);
-        tooltip.addPara("Gamma Assist follows the %s setting of your fleet doctrine.", opad,
+        tooltip.addPara("This Assist follows the %s setting of your fleet doctrine.", opad,
                 Misc.getGrayColor(), Misc.getHighlightColor(), "aggression");
         if (GammaSupport.isMixedAggression()) {
             tooltip.addPara("At the current setting, it is %s or %s at random each battle.", opad,
@@ -57,7 +57,10 @@ public class SSDGammaCorePlugin extends AICoreOfficerPluginImpl {
 
         @Override
         public PluginPick<AICoreOfficerPlugin> pickAICoreOfficerPlugin(String commodityId) {
-            if (!Commodities.GAMMA_CORE.equals(commodityId)) return null;
+            // Any core that can support a crewed ship (depending on settings). Everything except the
+            // personality section is vanilla's, so it's harmless for cores on automated ships too.
+            if (!Commodities.GAMMA_CORE.equals(commodityId) && !Commodities.BETA_CORE.equals(commodityId)
+                    && !Commodities.ALPHA_CORE.equals(commodityId)) return null;
             return new PluginPick<AICoreOfficerPlugin>(new SSDGammaCorePlugin(), PickPriority.MOD_SET);
         }
     }

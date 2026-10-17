@@ -21,6 +21,18 @@ Rules:
 - Replacing a Gamma core with an unassigned officer refunds the core. Selling, storing or scuttling the ship returns it through vanilla.
 - If you respec out of the skill, assigned Gamma cores go back to your cargo.
 
+## Settings (optional, via LunaLib)
+If LunaLib is installed, these options appear in its mod settings menu. Without LunaLib the defaults are used.
+
+| Setting | Default | Effect |
+|---|---|---|
+| Allowed AI cores | Gamma only | Which cores can support crewed ships: Gamma only, Gamma + Beta, or Gamma + Beta + Alpha. All are named "Gamma Assist - by Tri-Tachyon", each with its own core icon. Cores that are no longer allowed go back to cargo when you close the Fleet screen. |
+| Non-elite skills only | On | Assists only get the regular versions of their skills. Off: elite, like vanilla AI cores. |
+| Block capstone skills | On | Assists can't take Systems Expertise or Missile Specialization. |
+| Assists count as officers | Off | On: Assist-supported ships count as officered for Carrier Group, Fighter Uplink, Coordinated Maneuvers, Wolfpack Tactics and battle difficulty. AI Support Doctrine's own effects are unaffected. |
+
+Settings are re-read on load and whenever you open the core UI (Fleet, Refit, etc.). The skill's tooltip text follows them.
+
 ## How it works
 - While a core screen is open, the mod finds the vanilla captain picker (`coreui.CaptainPickerDialog`). For crewed ships it appends Gamma-core entries built with the picker's own "AI core" entry type, so the game's AI-core assignment handles cargo and the captain.
 - Each frame the mod snapshots every ship's captain. Vanilla's picker only half-does swaps involving a Gamma core on a crewed ship, so the mod finishes them on the next frame.

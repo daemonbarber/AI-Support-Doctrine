@@ -5,7 +5,7 @@ import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.util.Misc;
-import supportdoctrine.GammaSupport;
+import supportdoctrine.SSDSettings;
 
 /**
  * Officer checks used by vanilla skills that give extra bonuses to ships with officers. A Gamma core
@@ -49,6 +49,6 @@ final class OfficerChecks {
 
     private static boolean hasOfficer(PersonAPI captain, boolean automated) {
         if (captain == null || captain.isDefault()) return false;
-        return automated || !GammaSupport.isGamma(captain);
+        return automated || !captain.isAICore() || SSDSettings.countsAsOfficer;
     }
 }

@@ -11,7 +11,6 @@ import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.characters.SkillSpecAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
-import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.ui.ButtonAPI;
 import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.util.Misc;
@@ -83,15 +82,16 @@ final class PickerInjector {
 
     /**
      * The "Change skills" dialog edits a working copy of the core's stats, and clicking a skill
-     * always sets it to level 2 (elite). For Gamma cores on crewed ships, keep the working copy at
-     * level 1 so the dialog shows, and confirming applies, the regular versions.
+     * always sets it to level 2 (elite). For AI cores on crewed ships, apply the skill rules from the
+     * settings to the working copy so the dialog shows, and confirming applies, what's allowed.
      */
     private static void handleSkillDialog(Object dialog) throws Throwable {
         PersonAPI person = (PersonAPI) Reflect.getFieldOfType(dialog, PERSON_CLASS);
-        if (!GammaSupport.isCrewedGamma(person)) return;
+        if (!GammaSupport.isCrewedCore(person)) return;
         // Known cosmetic issue: this runs a frame after a click is drawn, so a newly picked skill
         // shows as elite for one frame before dropping to regular.
         clampSkillDialog(dialog);
+        if (!SSDSettings.blockCapstones) return;
         int hidden = hideBlockedSkillButtons(dialog, 0);
         if (hidden == 0 && !loggedNoSkillButtons) {
             loggedNoSkillButtons = true;
@@ -136,11 +136,7 @@ final class PickerInjector {
         MutableCharacterStatsAPI workingCopy =
                 (MutableCharacterStatsAPI) Reflect.getFieldOfType(dialog, CHARACTER_STATS_CLASS);
         if (workingCopy == null) return;
-        for (MutableCharacterStatsAPI.SkillLevelAPI skill : workingCopy.getSkillsCopy()) {
-            if (skill.getSkill().isAptitudeEffect() || skill.getLevel() <= 1f) continue;
-            workingCopy.setSkillLevel(skill.getSkill().getId(), 1f);
-        }
-        GammaSupport.removeBlockedSkills(workingCopy);
+        GammaSupport.applySkillRules(workingCopy);
     }
 
     private static void handlePicker(Object picker) throws Throwable {
@@ -152,6 +148,7 @@ final class PickerInjector {
         // getItems() is the live list; copy it since we add/remove entries below.
         List<?> items = new ArrayList<>((List<?>) Reflect.call(list, "getItems"));
 
+
         // Fighter wings and automated ships were already excluded above.
         boolean allowed = GammaSupport.playerHasSkill();
         // The player's own ship may take a core from another ship (a swap, finished by
@@ -159,51 +156,55 @@ final class PickerInjector {
         // without a ship, which vanilla never allows.
         boolean allowCargoCore = allowed && !GammaSupport.isPlayerShip(member);
 
-        List<Object> gammaEntries = new ArrayList<>();
+        // Vanilla never lists AI cores for crewed ships, so every AI core entry here is ours.
+        List<Object> coreEntries = new ArrayList<>();
         Set<PersonAPI> listed = new HashSet<>();
-        boolean cargoEntryListed = false;
+        Set<String> cargoTypesListed = new HashSet<>();
         boolean removed = false;
         FleetDataAPI fleetData = Global.getSector().getPlayerFleet().getFleetData();
         for (Object item : items) {
             if (!Reflect.hasMethod(item, "getPerson", 0)) continue;
             PersonAPI person = (PersonAPI) Reflect.call(item, "getPerson");
-            if (!GammaSupport.isGamma(person)) continue;
+            if (person == null || !person.isAICore()) continue;
             boolean fromCargo = fleetData.getMemberWithCaptain(person) == null;
-            if (!allowed || (fromCargo && !allowCargoCore)) {
+            if (!allowed || !GammaSupport.isSupportCore(person) || (fromCargo && !allowCargoCore)) {
                 Reflect.call(list, "removeItem", item);
                 removed = true;
                 continue;
             }
-            gammaEntries.add(item);
+            coreEntries.add(item);
             listed.add(person);
-            if (fromCargo) cargoEntryListed = true;
+            if (fromCargo) cargoTypesListed.add(person.getAICoreId());
         }
         if (removed) Reflect.call(list, "collapseEmptySlots");
         if (!allowed) return;
 
         // Like vanilla does for automated ships: list the cores already assigned (clicking the current
-        // captain unassigns it, clicking another ship's core moves it), then one core from cargo.
-        // Cores on automated ships are never listed. The picker rebuilds its list on every resize, so
-        // re-add whatever is missing each frame.
+        // captain unassigns it, clicking another ship's core moves it), then one of each allowed core
+        // type in cargo. Cores on automated ships are never listed. The picker rebuilds its list on
+        // every resize, so re-add whatever is missing each frame.
         int count = items.size();
-        for (FleetMemberAPI other : Global.getSector().getPlayerFleet().getFleetData().getMembersListCopy()) {
+        for (FleetMemberAPI other : fleetData.getMembersListCopy()) {
             PersonAPI captain = other.getCaptain();
-            if (!GammaSupport.hasCoreOnCrewedShip(other) || !GammaSupport.isGamma(captain)) continue;
+            if (!GammaSupport.hasCoreOnCrewedShip(other) || !GammaSupport.isSupportCore(captain)) continue;
             if (listed.contains(captain)) continue;
-            gammaEntries.add(addEntry(picker, member, list, count++, captain));
+            coreEntries.add(addEntry(picker, member, list, count++, captain));
         }
-        if (allowCargoCore && !cargoEntryListed && hasGammaInCargo()) {
-            // Built without elite skills so the picker previews what the ship will actually get.
-            gammaEntries.add(addEntry(picker, member, list, count, GammaSupport.createCrewedGamma()));
+        if (allowCargoCore) {
+            for (String coreId : SSDSettings.allowedCoreIds()) {
+                if (cargoTypesListed.contains(coreId) || !hasCoreInCargo(coreId)) continue;
+                // Built with the mod's rules applied, so the picker previews what the ship will get.
+                coreEntries.add(addEntry(picker, member, list, count++, GammaSupport.createCrewedCore(coreId)));
+            }
         }
 
-        for (Object entry : gammaEntries) {
-            tidyGammaEntry(entry, 0);
+        for (Object entry : coreEntries) {
+            tidyCoreEntry(entry, 0);
         }
     }
 
-    private static boolean hasGammaInCargo() {
-        return Global.getSector().getPlayerFleet().getCargo().getCommodityQuantity(Commodities.GAMMA_CORE) >= 1f;
+    private static boolean hasCoreInCargo(String coreId) {
+        return Global.getSector().getPlayerFleet().getCargo().getCommodityQuantity(coreId) >= 1f;
     }
 
     private static Object addEntry(Object picker, FleetMemberAPI member, Object list, int index, PersonAPI person)
@@ -232,11 +233,11 @@ final class PickerInjector {
     }
 
     /**
-     * Per-frame fixes to our Gamma entries: hide "Fully integrate...", and undo the picker's AI-core
+     * Per-frame fixes to our core entries: hide "Fully integrate...", and undo the picker's AI-core
      * label that shows a reckless personality as "Fearless" (Gamma Assists follow the doctrine, so
      * reckless is a real setting here and should read as one).
      */
-    private static void tidyGammaEntry(Object component, int depth) throws Throwable {
+    private static void tidyCoreEntry(Object component, int depth) throws Throwable {
         if (component instanceof ButtonAPI) {
             ButtonAPI button = (ButtonAPI) component;
             String text = button.getText();
@@ -253,7 +254,7 @@ final class PickerInjector {
         }
         if (depth > 6 || !Reflect.hasMethod(component, "getChildrenCopy", 0)) return;
         for (Object child : (List<?>) Reflect.call(component, "getChildrenCopy")) {
-            tidyGammaEntry(child, depth + 1);
+            tidyCoreEntry(child, depth + 1);
         }
     }
 }

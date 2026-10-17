@@ -8,7 +8,6 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.impl.campaign.skills.SupportDoctrine;
 import com.fs.starfarer.api.util.Misc;
-import supportdoctrine.GammaSupport;
 
 /**
  * Vanilla SupportDoctrine$Level3 (faster command point recovery unless command was transferred to a
@@ -40,6 +39,6 @@ public class SSDCommandPointEffect extends SupportDoctrine.Level3 {
             automated = Misc.isAutomated(member);
         }
         if (captain.isDefault()) return true;
-        return !automated && GammaSupport.isGamma(captain);
+        return !automated && captain.isAICore();
     }
 }
