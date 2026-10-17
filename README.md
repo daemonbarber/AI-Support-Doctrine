@@ -2,6 +2,8 @@
 
 Reworks the Leadership skill **Support Doctrine** into **AI Support Doctrine** (Starsector 0.98a). Flavor: Tri-Tachyon's "Gamma Assist" AI assistant.
 
+![AI Support Doctrine skill tooltip](screenshots/skill-tooltip.png)
+
 ## The skill
 - **Removed:** "Gain non-elite Helmsmanship, Damage Control, Combat Endurance, and Ordnance Expertise".
 - **Added:** "Ships without officers can be supported by Gamma Cores". AI cores in your cargo show up next to your officers in the captain list of crewed ships. Which core types are offered is a setting; the default is Gamma only.
@@ -17,6 +19,18 @@ An AI core supporting a crewed ship is called a **Gamma Assist**. With the defau
 - **No capstones:** it can't take Systems Expertise or Missile Specialization. They're hidden in "Change skills", leaving a gap, and removed from existing cores, leaving a free slot. *(Setting.)*
 - **No integration:** the "Fully integrate" button is hidden. If an integration still happens, it's undone and the story point refunded.
 - **Not an officer:** a ship supported by an Assist counts as having no officer for the skills Carrier Group, Fighter Uplink, Coordinated Maneuvers and Wolfpack Tactics, and for battle difficulty (the post-battle XP multiplier). *(Setting.)*
+
+**Gamma Assists in the captain list, next to your officers:**
+
+![Captain picker with Gamma Assists](screenshots/captain-picker.png)
+
+**An assigned Gamma Assist, following the doctrine's aggression:**
+
+![Gamma Assist tooltip](screenshots/assist-tooltip.png)
+
+**Change skills: capstone skills are hidden and picks are non-elite:**
+
+![Change skills dialog](screenshots/change-skills.png)
 
 ## Settings
 - **With LunaLib installed:** change these in its mod settings menu. They apply immediately.
