@@ -1,0 +1,11 @@
+{
+  "id": "ssd_gamma_support",
+  "name": "Support Doctrine: Gamma Support",
+  "author": "Barber",
+  "utility": "false",
+  "version": "0.1.0",
+  "description": "Reworks the Support Doctrine skill: instead of granting free skills to unofficered ships, it lets Gamma cores captain crewed ships (no integration).",
+  "gameVersion": "0.98a-RC8",
+  "jars": ["jars/SupportDoctrineGamma.jar"],
+  "modPlugin": "supportdoctrine.SSDModPlugin"
+}
