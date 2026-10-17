@@ -9,6 +9,7 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.FleetDataAPI;
 import com.fs.starfarer.api.characters.MutableCharacterStatsAPI;
 import com.fs.starfarer.api.characters.PersonAPI;
+import com.fs.starfarer.api.characters.SkillSpecAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.ui.ButtonAPI;
@@ -91,6 +92,48 @@ final class PickerInjector {
         // Known cosmetic issue: this runs a frame after a click is drawn, so a newly picked skill
         // shows as elite for one frame before dropping to regular.
         clampSkillDialog(dialog);
+        int hidden = hideBlockedSkillButtons(dialog, 0);
+        if (hidden == 0 && !loggedNoSkillButtons) {
+            loggedNoSkillButtons = true;
+            GammaSupport.LOG.warn("SSD: no capstone skill buttons found in the Change skills dialog");
+        }
+    }
+
+    private static boolean loggedNoSkillButtons = false;
+
+    /**
+     * Hides the capstone skill buttons (Gamma Assists can't take them), leaving a gap in the layout.
+     * Returns how many were found. Also descends into scrollers' content containers and dialogs'
+     * inner panels, since those aren't part of the regular child list.
+     */
+    private static int hideBlockedSkillButtons(Object component, int depth) throws Throwable {
+        int found = 0;
+        if (component instanceof ButtonAPI) {
+            ButtonAPI button = (ButtonAPI) component;
+            Object data = button.getCustomData();
+            if (data instanceof SkillSpecAPI && GammaSupport.BLOCKED_SKILLS.contains(((SkillSpecAPI) data).getId())) {
+                button.setEnabled(false);
+                button.setOpacity(0f);
+                found++;
+            }
+        }
+        if (depth > 20) return found;
+        if (Reflect.hasMethod(component, "getChildrenCopy", 0)) {
+            for (Object child : (List<?>) Reflect.call(component, "getChildrenCopy")) {
+                found += hideBlockedSkillButtons(child, depth + 1);
+            }
+        }
+        if (Reflect.hasMethod(component, "getContentContainer", 0)) {
+            Object content = Reflect.call(component, "getContentContainer");
+            if (content != null) found += hideBlockedSkillButtons(content, depth + 1);
+        }
+        // Dialogs add their contents (including the skill buttons) to an inner panel that isn't in
+        // their regular child list.
+        if (Reflect.hasMethod(component, "getInnerPanel", 0)) {
+            Object inner = Reflect.call(component, "getInnerPanel");
+            if (inner != null && inner != component) found += hideBlockedSkillButtons(inner, depth + 1);
+        }
+        return found;
     }
 
     private static void clampSkillDialog(Object dialog) throws Throwable {
@@ -101,6 +144,7 @@ final class PickerInjector {
             if (skill.getSkill().isAptitudeEffect() || skill.getLevel() <= 1f) continue;
             workingCopy.setSkillLevel(skill.getSkill().getId(), 1f);
         }
+        GammaSupport.removeBlockedSkills(workingCopy);
     }
 
     private static void handlePicker(Object picker) throws Throwable {

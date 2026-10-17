@@ -1,5 +1,6 @@
 package supportdoctrine;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.ids.Personalities;
+import com.fs.starfarer.api.impl.campaign.ids.Skills;
 import com.fs.starfarer.api.impl.campaign.ids.Tags;
 import com.fs.starfarer.api.util.Misc;
 import org.apache.log4j.Logger;
@@ -180,8 +182,24 @@ public final class GammaSupport {
         return changed;
     }
 
+    /** Capstone (tier 5) combat skills that Gamma Assists can't have. */
+    public static final Set<String> BLOCKED_SKILLS = new HashSet<>(Arrays.asList(
+            Skills.SYSTEMS_EXPERTISE, Skills.MISSILE_SPECIALIZATION));
+
+    /** Removes capstone skills; the slot is left free to refill via "Change skills". */
+    public static boolean removeBlockedSkills(MutableCharacterStatsAPI stats) {
+        boolean changed = false;
+        for (String id : BLOCKED_SKILLS) {
+            if (stats.getSkillLevel(id) > 0f) {
+                stats.setSkillLevel(id, 0f);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
     /**
-     * Brings every Gamma core on a crewed ship in line with Support Doctrine: no elite skills, the
+     * Brings every Gamma core on a crewed ship in line with Support Doctrine: no elite or capstone skills, the
      * doctrine's aggression instead of the AI core default, and the core icon as its portrait.
      */
     public static void normalizeCrewedGammas() {
@@ -191,6 +209,7 @@ public final class GammaSupport {
             if (!hasCoreOnCrewedShip(member) || !isGamma(member.getCaptain())) continue;
             PersonAPI gamma = member.getCaptain();
             boolean skillsChanged = removeEliteSkills(gamma);
+            skillsChanged |= removeBlockedSkills(gamma.getStats());
             applyDoctrinePersonality(gamma);
             applyGammaAssistIdentity(gamma);
             if (skillsChanged) member.updateStats();

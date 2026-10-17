@@ -9,7 +9,7 @@ public class SSDGammaSupportNotes implements DescriptionSkillEffect {
 
     public String getString() {
         // Leading newline (as vanilla's Phase Corps note does) moves the note below the flavor text.
-        return "\n*Gamma Cores on crewed ships are limited to non-elite skills and can not be integrated. "
+        return "\n*Gamma Cores on crewed ships are limited to basic non-elite skills and can not be integrated. "
                 + "Ships supported by a Gamma Core do not count as having an officer.";
     }
 
@@ -19,7 +19,7 @@ public class SSDGammaSupportNotes implements DescriptionSkillEffect {
     }
 
     public String[] getHighlights() {
-        return new String[] {"non-elite skills", "can not be integrated", "do not count as having an officer"};
+        return new String[] {"basic non-elite skills", "can not be integrated", "do not count as having an officer"};
     }
 
     public Color getTextColor() {
