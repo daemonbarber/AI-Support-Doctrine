@@ -10,7 +10,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.util.Misc;
 
 /**
- * Only does work while the core UI is open (runs while paused):
+ * Only does work on the Fleet and Refit tabs of the core UI, plus once when the core UI closes:
  * - adds Gamma core entries to the captain picker and keeps "Change skills" non-elite;
  * - finishes swaps / refunds Gamma cores that vanilla's picker only half-handles;
  * - once the core UI closes, enforces the rules (Gamma only, no integration, skill required).
@@ -18,6 +18,7 @@ import com.fs.starfarer.api.util.Misc;
 public class SSDGammaMonitor implements EveryFrameScript {
 
     private boolean wasInCoreUI = false;
+    private boolean wasOnPickerTab = false;
 
     public boolean isDone() {
         return false;
@@ -41,18 +42,23 @@ public class SSDGammaMonitor implements EveryFrameScript {
             }
         }
 
-        // Captains can only be changed through the core UI, so outside it there's nothing else to do.
-        if (tab != null) {
-            // Fresh baseline when the UI opens; captains may have changed since it was last open.
-            if (!wasInCoreUI) GammaSupport.snapshotCaptains();
-            // The captain picker can be opened from the Fleet and Refit tabs, so look for it on any tab.
+        // Captains can only be changed via the captain picker, which (with the "Change skills" dialog
+        // it opens) only exists on the Fleet and Refit tabs, so the per-frame work is limited to those.
+        // Changes made elsewhere (respec on the Character tab, doctrine aggression) are handled by
+        // enforce() when the core UI closes.
+        boolean pickerTab = tab == CoreUITabId.FLEET || tab == CoreUITabId.REFIT;
+        if (pickerTab) {
+            // Fresh baseline on arrival; captains may have changed since we last looked.
+            if (!wasOnPickerTab) GammaSupport.snapshotCaptains();
             PickerInjector.advance();
             GammaSupport.reconcileCaptainChanges();
             GammaSupport.normalizeCrewedGammas();
             GammaSupport.snapshotCaptains();
-        } else if (wasInCoreUI) {
+        }
+        if (tab == null && wasInCoreUI) {
             enforce();
         }
+        wasOnPickerTab = pickerTab;
         wasInCoreUI = tab != null;
     }
 
