@@ -1,0 +1,12 @@
+{
+    "masterVersionFile":"https://raw.githubusercontent.com/daemonbarber/AI-Support-Doctrine/main/aisd.version",
+    "modName":"AI Support Doctrine",
+    "modVersion":
+    {
+        "major":1,
+        "minor":0,
+        "patch":0
+    },
+    "directDownloadURL":"https://github.com/daemonbarber/AI-Support-Doctrine/releases/latest/download/AI-Support-Doctrine.zip",
+    "changelogURL":"https://raw.githubusercontent.com/daemonbarber/AI-Support-Doctrine/main/changelog.txt",
+}

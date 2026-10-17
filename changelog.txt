@@ -1,0 +1,5 @@
+Version 1.0.0
+- Initial release.
+- Support Doctrine becomes AI Support Doctrine: instead of free skills for unofficered ships, AI cores ("Gamma Assists") can captain crewed ships from the normal captain list.
+- Gamma Assists: regular (non-elite) skills, no capstone skills, no integration, follow the fleet doctrine's aggression, and don't count as officers for other skills or battle difficulty.
+- Settings via LunaLib (optional) or data/config/settings.json: allowed AI cores (Gamma / Gamma + Beta / Gamma + Beta + Alpha), non-elite skills only, block capstone skills, Assists count as officers.
