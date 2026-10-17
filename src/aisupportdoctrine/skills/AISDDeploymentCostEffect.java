@@ -1,4 +1,4 @@
-package supportdoctrine.skills;
+package aisupportdoctrine.skills;
 
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.combat.MutableShipStatsAPI;
@@ -14,7 +14,7 @@ import com.fs.starfarer.api.util.Misc;
  * Vanilla SupportDoctrine$Level2 (deployment cost reduction for ships without officers), except a
  * Gamma core supporting a crewed ship doesn't count as an officer.
  */
-public class SSDDeploymentCostEffect extends SupportDoctrine.Level2 {
+public class AISDDeploymentCostEffect extends SupportDoctrine.Level2 {
 
     @Override
     public void apply(MutableShipStatsAPI stats, HullSize hullSize, String id, float level) {

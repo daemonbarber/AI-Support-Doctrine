@@ -13,7 +13,7 @@
 			"requiredSkillLevel":1,
 			"effectBasedOnLevel":false,
 			"effects":[
-				{"type":"ALL_SHIPS_IN_FLEET", "script":"supportdoctrine.skills.SSDCarrierGroupEffect"},
+				{"type":"ALL_SHIPS_IN_FLEET", "script":"aisupportdoctrine.skills.AISDCarrierGroupEffect"},
 				{"type":"HULLMOD_UNLOCK", "hullmods":{"converted_hangar":1,"expanded_deck_crew":1, "converted_fighterbay":1}},
 				
 			]

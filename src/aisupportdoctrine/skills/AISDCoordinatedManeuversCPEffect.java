@@ -1,4 +1,4 @@
-package supportdoctrine.skills;
+package aisupportdoctrine.skills;
 
 import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
@@ -6,7 +6,7 @@ import com.fs.starfarer.api.impl.campaign.ids.Stats;
 import com.fs.starfarer.api.impl.campaign.skills.CoordinatedManeuvers;
 
 /** Vanilla CoordinatedManeuvers$Level1C; Gamma cores on crewed ships don't count as officers. */
-public class SSDCoordinatedManeuversCPEffect extends CoordinatedManeuvers.Level1C {
+public class AISDCoordinatedManeuversCPEffect extends CoordinatedManeuvers.Level1C {
 
     @Override
     public void apply(MutableShipStatsAPI stats, HullSize hullSize, String id, float level) {

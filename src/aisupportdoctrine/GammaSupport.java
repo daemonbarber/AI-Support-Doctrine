@@ -1,4 +1,4 @@
-package supportdoctrine;
+package aisupportdoctrine;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 
 /**
  * Shared helpers for AI cores supporting crewed (non-automated) ships ("Assists"). Which cores are
- * allowed comes from SSDSettings (Gamma only by default). Vanilla never puts AI cores on crewed
+ * allowed comes from AISDSettings (Gamma only by default). Vanilla never puts AI cores on crewed
  * ships, so any AI core on a crewed ship in the player's fleet is one of ours.
  */
 public final class GammaSupport {
@@ -55,7 +55,7 @@ public final class GammaSupport {
 
     /** An AI core of a type currently allowed to support crewed ships. */
     public static boolean isSupportCore(PersonAPI person) {
-        return person != null && person.isAICore() && SSDSettings.isAllowedCore(person.getAICoreId());
+        return person != null && person.isAICore() && AISDSettings.isAllowedCore(person.getAICoreId());
     }
 
     /** A crewed ship captained by an AI core (only possible through this mod). */
@@ -147,7 +147,7 @@ public final class GammaSupport {
                 return Personalities.RECKLESS;
             default:
                 // Level 4 is a mix of aggressive and reckless. Like vanilla does for ships without
-                // officers, the actual pick happens per battle (SSDCombatPlugin); out of combat the
+                // officers, the actual pick happens per battle (AISDCombatPlugin); out of combat the
                 // core shows as aggressive so it doesn't change between looks.
                 return Personalities.AGGRESSIVE;
         }
@@ -198,8 +198,8 @@ public final class GammaSupport {
 
     /** Applies the skill rules from the settings to a set of stats. Returns true if anything changed. */
     public static boolean applySkillRules(MutableCharacterStatsAPI stats) {
-        boolean changed = SSDSettings.nonEliteOnly ? removeEliteSkills(stats) : restoreEliteSkills(stats);
-        if (SSDSettings.blockCapstones) changed |= removeBlockedSkills(stats);
+        boolean changed = AISDSettings.nonEliteOnly ? removeEliteSkills(stats) : restoreEliteSkills(stats);
+        if (AISDSettings.blockCapstones) changed |= removeBlockedSkills(stats);
         return changed;
     }
 
@@ -262,7 +262,7 @@ public final class GammaSupport {
                 source.setCaptain(before);
             }
             assigned.add(before);
-            LOG.info("SSD: swapped " + before.getNameString() + " onto " + source.getShipName());
+            LOG.info("AISD: swapped " + before.getNameString() + " onto " + source.getShipName());
         }
 
         // Officer path: an officer or the player replaced the core on this ship.
@@ -275,10 +275,10 @@ public final class GammaSupport {
             if (origin != null && origin != ship && !Misc.isAutomated(origin)
                     && origin.getCaptain() != null && origin.getCaptain().isDefault()) {
                 origin.setCaptain(before);
-                LOG.info("SSD: swapped " + before.getNameString() + " onto " + origin.getShipName());
+                LOG.info("AISD: swapped " + before.getNameString() + " onto " + origin.getShipName());
             } else {
                 addCoreToCargo(before.getAICoreId());
-                LOG.info("SSD: refunded " + before.getNameString() + " replaced on " + ship.getShipName());
+                LOG.info("AISD: refunded " + before.getNameString() + " replaced on " + ship.getShipName());
             }
             assigned.add(before);
         }

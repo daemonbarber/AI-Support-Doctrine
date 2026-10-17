@@ -1,4 +1,4 @@
-package supportdoctrine;
+package aisupportdoctrine;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -57,7 +57,7 @@ final class PickerInjector {
             if (found[1] != null) handleSkillDialog(found[1]);
         } catch (Throwable t) {
             disabled = true;
-            GammaSupport.LOG.warn("SSD: captain picker integration failed; Gamma cores won't be offered this session", t);
+            GammaSupport.LOG.warn("AISD: captain picker integration failed; Gamma cores won't be offered this session", t);
         }
     }
 
@@ -91,11 +91,11 @@ final class PickerInjector {
         // Known cosmetic issue: this runs a frame after a click is drawn, so a newly picked skill
         // shows as elite for one frame before dropping to regular.
         clampSkillDialog(dialog);
-        if (!SSDSettings.blockCapstones) return;
+        if (!AISDSettings.blockCapstones) return;
         int hidden = hideBlockedSkillButtons(dialog, 0);
         if (hidden == 0 && !loggedNoSkillButtons) {
             loggedNoSkillButtons = true;
-            GammaSupport.LOG.warn("SSD: no capstone skill buttons found in the Change skills dialog");
+            GammaSupport.LOG.warn("AISD: no capstone skill buttons found in the Change skills dialog");
         }
     }
 
@@ -191,7 +191,7 @@ final class PickerInjector {
             coreEntries.add(addEntry(picker, member, list, count++, captain));
         }
         if (allowCargoCore) {
-            for (String coreId : SSDSettings.allowedCoreIds()) {
+            for (String coreId : AISDSettings.allowedCoreIds()) {
                 if (cargoTypesListed.contains(coreId) || !hasCoreInCargo(coreId)) continue;
                 // Built with the mod's rules applied, so the picker previews what the ship will get.
                 coreEntries.add(addEntry(picker, member, list, count++, GammaSupport.createCrewedCore(coreId)));

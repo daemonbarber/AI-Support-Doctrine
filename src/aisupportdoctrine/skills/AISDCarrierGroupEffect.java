@@ -1,11 +1,11 @@
-package supportdoctrine.skills;
+package aisupportdoctrine.skills;
 
 import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipAPI.HullSize;
 import com.fs.starfarer.api.impl.campaign.skills.CarrierGroup;
 
 /** Vanilla CarrierGroup$Level1; the officer bonus ignores Gamma cores on crewed ships. */
-public class SSDCarrierGroupEffect extends CarrierGroup.Level1 {
+public class AISDCarrierGroupEffect extends CarrierGroup.Level1 {
 
     @Override
     public void apply(MutableShipStatsAPI stats, HullSize hullSize, String id, float level) {

@@ -1,4 +1,4 @@
-package supportdoctrine;
+package aisupportdoctrine;
 
 import com.fs.starfarer.api.EveryFrameScript;
 import com.fs.starfarer.api.Global;
@@ -15,7 +15,7 @@ import com.fs.starfarer.api.util.Misc;
  * - finishes swaps / refunds Gamma cores that vanilla's picker only half-handles;
  * - once the core UI closes, enforces the rules (Gamma only, no integration, skill required).
  */
-public class SSDGammaMonitor implements EveryFrameScript {
+public class AISDGammaMonitor implements EveryFrameScript {
 
     private boolean wasInCoreUI = false;
     private boolean wasOnPickerTab = false;
@@ -38,7 +38,7 @@ public class SSDGammaMonitor implements EveryFrameScript {
             try {
                 BattleDifficulty.apply(ui.getCurrentInteractionDialog());
             } catch (Throwable t) {
-                GammaSupport.LOG.warn("SSD: failed to compute battle difficulty; using vanilla's", t);
+                GammaSupport.LOG.warn("AISD: failed to compute battle difficulty; using vanilla's", t);
             }
         }
 
@@ -47,7 +47,7 @@ public class SSDGammaMonitor implements EveryFrameScript {
         // Changes made elsewhere (respec on the Character tab, doctrine aggression) are handled by
         // enforce() when the core UI closes.
         // Pick up changes made in the LunaLib settings menu.
-        if (tab != null && !wasInCoreUI) SSDSettings.reload();
+        if (tab != null && !wasInCoreUI) AISDSettings.reload();
 
         boolean pickerTab = tab == CoreUITabId.FLEET || tab == CoreUITabId.REFIT;
         if (pickerTab) {
@@ -81,7 +81,7 @@ public class SSDGammaMonitor implements EveryFrameScript {
             } else if (!GammaSupport.isSupportCore(captain)) {
                 GammaSupport.returnCoreToCargo(member);
                 message(name + " returned to cargo: AI Support Doctrine only allows "
-                        + SSDSettings.allowedCoresText() + " on crewed ships");
+                        + AISDSettings.allowedCoresText() + " on crewed ships");
             } else if (Misc.isUnremovable(captain)) {
                 GammaSupport.resetIntegratedCore(member);
                 Global.getSector().getPlayerStats().addStoryPoints(1);
@@ -92,7 +92,7 @@ public class SSDGammaMonitor implements EveryFrameScript {
     }
 
     private static void message(String text) {
-        GammaSupport.LOG.info("SSD: " + text);
+        GammaSupport.LOG.info("AISD: " + text);
         Global.getSector().getCampaignUI().addMessage(text, Misc.getHighlightColor());
     }
 }

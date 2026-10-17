@@ -1,6 +1,6 @@
-package supportdoctrine.skills;
+package aisupportdoctrine.skills;
 
-import supportdoctrine.SSDSettings;
+import aisupportdoctrine.AISDSettings;
 
 import com.fs.starfarer.api.characters.ShipSkillEffect;
 import com.fs.starfarer.api.combat.MutableShipStatsAPI;
@@ -8,9 +8,9 @@ import com.fs.starfarer.api.combat.ShipAPI.HullSize;
 
 /**
  * Replaces vanilla SupportDoctrine$Level1. Has no stat effect; the actual behavior lives in
- * SSDCoreUIListener / SSDGammaMonitor, which check whether the player has this skill.
+ * AISDCoreUIListener / AISDGammaMonitor, which check whether the player has this skill.
  */
-public class SSDGammaSupportEffect implements ShipSkillEffect {
+public class AISDGammaSupportEffect implements ShipSkillEffect {
 
     public void apply(MutableShipStatsAPI stats, HullSize hullSize, String id, float level) {
     }
@@ -19,7 +19,7 @@ public class SSDGammaSupportEffect implements ShipSkillEffect {
     }
 
     public String getEffectDescription(float level) {
-        return "Ships without officers can be supported by " + SSDSettings.allowedCoresText();
+        return "Ships without officers can be supported by " + AISDSettings.allowedCoresText();
     }
 
     public String getEffectPerLevelDescription() {

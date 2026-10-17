@@ -1,4 +1,4 @@
-package supportdoctrine.skills;
+package aisupportdoctrine.skills;
 
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.combat.MutableShipStatsAPI;
@@ -14,7 +14,7 @@ import com.fs.starfarer.api.util.Misc;
  * ship originally without an officer), except a ship supported by a Gamma core also counts as
  * "without an officer", so commanding from it gives no bonus.
  */
-public class SSDCommandPointEffect extends SupportDoctrine.Level3 {
+public class AISDCommandPointEffect extends SupportDoctrine.Level3 {
 
     @Override
     public void apply(MutableShipStatsAPI stats, HullSize hullSize, String id, float level) {

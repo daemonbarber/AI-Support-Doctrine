@@ -1,4 +1,4 @@
-package supportdoctrine;
+package aisupportdoctrine;
 
 import java.awt.Color;
 
@@ -18,7 +18,7 @@ import com.fs.starfarer.api.util.Misc;
  * always says "fearless" with the AI core blurb. For Gamma Assists on crewed ships (which follow the
  * doctrine's aggression), show their actual personality like a human officer's tooltip does.
  */
-public class SSDGammaCorePlugin extends AICoreOfficerPluginImpl {
+public class AISDGammaCorePlugin extends AICoreOfficerPluginImpl {
 
     @Override
     public void createPersonalitySection(PersonAPI person, TooltipMakerAPI tooltip) {
@@ -41,9 +41,9 @@ public class SSDGammaCorePlugin extends AICoreOfficerPluginImpl {
         }
     }
 
-    /** Offers SSDGammaCorePlugin for Gamma cores. Transient, so it's never written to the save. */
+    /** Offers AISDGammaCorePlugin for Gamma cores. Transient, so it's never written to the save. */
     public static class Picker extends BaseCampaignPlugin {
-        public static final String ID = "ssd_gamma_core_plugin_picker";
+        public static final String ID = "aisd_gamma_core_plugin_picker";
 
         @Override
         public String getId() {
@@ -61,7 +61,7 @@ public class SSDGammaCorePlugin extends AICoreOfficerPluginImpl {
             // personality section is vanilla's, so it's harmless for cores on automated ships too.
             if (!Commodities.GAMMA_CORE.equals(commodityId) && !Commodities.BETA_CORE.equals(commodityId)
                     && !Commodities.ALPHA_CORE.equals(commodityId)) return null;
-            return new PluginPick<AICoreOfficerPlugin>(new SSDGammaCorePlugin(), PickPriority.MOD_SET);
+            return new PluginPick<AICoreOfficerPlugin>(new AISDGammaCorePlugin(), PickPriority.MOD_SET);
         }
     }
 }

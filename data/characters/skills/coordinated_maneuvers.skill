@@ -16,8 +16,8 @@
 			"requiredSkillLevel":1,
 			"effectBasedOnLevel":false,
 			"effects":[
-				{"type":"ALL_SHIPS_IN_FLEET", "script":"supportdoctrine.skills.SSDCoordinatedManeuversNavEffect"},
-				{"type":"ALL_SHIPS_IN_FLEET", "script":"supportdoctrine.skills.SSDCoordinatedManeuversCPEffect"},
+				{"type":"ALL_SHIPS_IN_FLEET", "script":"aisupportdoctrine.skills.AISDCoordinatedManeuversNavEffect"},
+				{"type":"ALL_SHIPS_IN_FLEET", "script":"aisupportdoctrine.skills.AISDCoordinatedManeuversCPEffect"},
 				#{"type":"CHARACTER_STATS", "script":"com.fs.starfarer.api.impl.campaign.skills.CoordinatedManeuvers$Level1B"},
 				{"type":"HULLMOD_UNLOCK", "hullmods":{"nav_relay":1, "escort_package":1, "operations_center":1}},
 			]

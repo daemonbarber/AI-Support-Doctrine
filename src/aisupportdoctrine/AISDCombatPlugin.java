@@ -1,4 +1,4 @@
-package supportdoctrine;
+package aisupportdoctrine;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,7 +21,7 @@ import com.fs.starfarer.api.util.WeightedRandomPicker;
  * rolls aggressive or reckless once per battle, using the player faction's personality picker,
  * the way vanilla handles ships without officers. Registered in data/config/settings.json.
  */
-public class SSDCombatPlugin extends BaseEveryFrameCombatPlugin {
+public class AISDCombatPlugin extends BaseEveryFrameCombatPlugin {
 
     private CombatEngineAPI engine;
     private boolean active = false;

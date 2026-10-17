@@ -1,4 +1,4 @@
-package supportdoctrine;
+package aisupportdoctrine;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -42,7 +42,7 @@ final class BattleDifficulty {
     private static boolean isOfficer(FleetMemberAPI member) {
         PersonAPI captain = member.getCaptain();
         if (captain == null || captain.isDefault()) return false;
-        return Misc.isAutomated(member) || !captain.isAICore() || SSDSettings.countsAsOfficer;
+        return Misc.isAutomated(member) || !captain.isAICore() || AISDSettings.countsAsOfficer;
     }
 
     private static float compute(BattleAPI battle) {

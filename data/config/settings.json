@@ -1,5 +1,17 @@
 {
 	"plugins":{
-		"ssd_gammaAssistCombatPlugin":"supportdoctrine.SSDCombatPlugin",
+		"aisd_gammaAssistCombatPlugin":"aisupportdoctrine.AISDCombatPlugin",
 	},
+
+	# AI Support Doctrine options. Used when LunaLib is NOT installed (with LunaLib, use its
+	# mod settings menu instead). Restart the game after editing.
+
+	# Which AI cores can support crewed ships: "Gamma only", "Gamma + Beta", or "Gamma + Beta + Alpha"
+	"aisd_allowedCores":"Gamma only",
+	# Gamma Assists only get the regular (non-elite) versions of their skills
+	"aisd_nonEliteOnly":true,
+	# Gamma Assists can't take Systems Expertise or Missile Specialization
+	"aisd_blockCapstones":true,
+	# Gamma Assist-supported ships count as officered for other skills and battle difficulty
+	"aisd_countsAsOfficer":false,
 }

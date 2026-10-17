@@ -8,16 +8,16 @@
 		{
 			"requiredSkillLevel":0,
 			"effects":[
-				{"type":"DESCRIPTION", "script":"supportdoctrine.skills.SSDGammaSupportNotes"},
+				{"type":"DESCRIPTION", "script":"aisupportdoctrine.skills.AISDGammaSupportNotes"},
 			]
 		},
 		{
 			"requiredSkillLevel":1,
 			"effectBasedOnLevel":false,
 			"effects":[
-				{"type":"ALL_SHIPS_IN_FLEET", "script":"supportdoctrine.skills.SSDGammaSupportEffect"},
-				{"type":"ALL_SHIPS_IN_FLEET", "script":"supportdoctrine.skills.SSDDeploymentCostEffect"},
-				{"type":"SHIP", "script":"supportdoctrine.skills.SSDCommandPointEffect"},
+				{"type":"ALL_SHIPS_IN_FLEET", "script":"aisupportdoctrine.skills.AISDGammaSupportEffect"},
+				{"type":"ALL_SHIPS_IN_FLEET", "script":"aisupportdoctrine.skills.AISDDeploymentCostEffect"},
+				{"type":"SHIP", "script":"aisupportdoctrine.skills.AISDCommandPointEffect"},
 			]
 		},
 	],

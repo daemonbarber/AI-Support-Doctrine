@@ -12,8 +12,8 @@
 			"requiredSkillLevel":1,
 			"effectBasedOnLevel":false,
 			"effects":[
-				{"type":"ALL_SHIPS_IN_FLEET", "script":"supportdoctrine.skills.SSDFighterUplinkShipEffect"},
-				{"type":"ALL_FIGHTERS_IN_FLEET", "script":"supportdoctrine.skills.SSDFighterUplinkFighterEffect"},
+				{"type":"ALL_SHIPS_IN_FLEET", "script":"aisupportdoctrine.skills.AISDFighterUplinkShipEffect"},
+				{"type":"ALL_FIGHTERS_IN_FLEET", "script":"aisupportdoctrine.skills.AISDFighterUplinkFighterEffect"},
 				{"type":"HULLMOD_UNLOCK", "hullmods":{"recovery_shuttles":1}},
 			]
 		},

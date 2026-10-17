@@ -1,4 +1,4 @@
-package supportdoctrine.skills;
+package aisupportdoctrine.skills;
 
 import com.fs.starfarer.api.combat.MutableShipStatsAPI;
 import com.fs.starfarer.api.combat.ShipAPI;
@@ -7,7 +7,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.skills.WolfpackTactics;
 
 /** Vanilla WolfpackTactics$Level1A; Gamma cores on crewed ships don't count as officers. */
-public class SSDWolfpackTacticsEffect extends WolfpackTactics.Level1A {
+public class AISDWolfpackTacticsEffect extends WolfpackTactics.Level1A {
 
     @Override
     public void apply(MutableShipStatsAPI stats, HullSize hullSize, String id, float level) {

@@ -1,4 +1,4 @@
-package supportdoctrine;
+package aisupportdoctrine;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,11 +10,11 @@ import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 /**
  * Mod options. The defaults are the mod's intended behavior; if LunaLib is installed, the values
  * come from its settings menu (data/config/LunaSettings.csv). LunaLib is optional, so all of its
- * classes are only touched from SSDLunaBridge, and only when LunaLib is enabled.
+ * classes are only touched from AISDLunaBridge, and only when LunaLib is enabled.
  */
-public final class SSDSettings {
+public final class AISDSettings {
 
-    public static final String MOD_ID = "ssd_gamma_support";
+    public static final String MOD_ID = "aisd_gamma_support";
     private static final String LUNALIB_ID = "lunalib";
 
     public static final String CORES_GAMMA = "Gamma only";
@@ -33,20 +33,26 @@ public final class SSDSettings {
 
     private static boolean listenerRegistered = false;
 
-    private SSDSettings() {
+    private AISDSettings() {
     }
 
-    /** Reloads the settings from LunaLib, if it's enabled. Safe to call any time. */
+    /**
+     * Reloads the settings: from LunaLib if it's enabled, otherwise from data/config/settings.json
+     * (merged into the game's settings). Safe to call any time.
+     */
     public static void reload() {
-        if (!isLunaLibEnabled()) return;
+        if (!isLunaLibEnabled()) {
+            loadFromSettingsFile();
+            return;
+        }
         try {
-            SSDLunaBridge.load();
+            AISDLunaBridge.load();
             if (!listenerRegistered) {
-                SSDLunaBridge.registerListener();
+                AISDLunaBridge.registerListener();
                 listenerRegistered = true;
             }
         } catch (Throwable t) {
-            GammaSupport.LOG.warn("SSD: couldn't read LunaLib settings; using defaults", t);
+            GammaSupport.LOG.warn("AISD: couldn't read LunaLib settings; using defaults", t);
         }
     }
 
@@ -75,6 +81,18 @@ public final class SSDSettings {
     /** For text: "a Gamma Core" when only Gammas are allowed, otherwise "an AI Core". */
     public static String singleCoreText() {
         return CORES_GAMMA.equals(allowedCores) ? "a Gamma Core" : "an AI Core";
+    }
+
+    private static void loadFromSettingsFile() {
+        try {
+            allowedCores = Global.getSettings().getString("aisd_allowedCores").trim();
+            nonEliteOnly = Global.getSettings().getBoolean("aisd_nonEliteOnly");
+            blockCapstones = Global.getSettings().getBoolean("aisd_blockCapstones");
+            countsAsOfficer = Global.getSettings().getBoolean("aisd_countsAsOfficer");
+        } catch (Throwable t) {
+            // e.g. a key removed or mistyped by hand; anything not read keeps its previous value
+            GammaSupport.LOG.warn("AISD: couldn't read all options from settings.json; using defaults for the rest", t);
+        }
     }
 
     private static boolean isLunaLibEnabled() {
